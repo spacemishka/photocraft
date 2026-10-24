@@ -804,3 +804,17 @@ fn reduce_noise_dialog_gets_the_analysis_values() {
         assert_eq!(d.fields.get(key), v["noise"]["recommended"].get(key), "{key} was not passed through");
     }
 }
+
+/// Image › Auto Correct… builds its adjustment layers and reports the values.
+#[test]
+fn auto_correct_runs_from_the_menu_and_posts_a_notice() {
+    let (mut app, ctx) = app_with(1);
+    let v = menu(&mut app, &ctx, "image.autoCorrect", json!({})).expect("handled");
+    assert_eq!(v["applied"], json!(true), "{v}");
+    assert!(v["levelsLayer"].as_u64().is_some(), "{v}");
+    assert!(
+        app.ui.notices.iter().any(|n| n.title.contains("Auto Correct") || n.title.contains("Automatisch korrigieren")),
+        "{:?}",
+        app.ui.notices
+    );
+}

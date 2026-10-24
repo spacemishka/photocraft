@@ -3091,6 +3091,9 @@ curves	Smooth	平滑
 	Driver: {driver}	驱动程序：{driver}
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Auto Correct…	自动校正…
+	Auto Correct	自动校正
+	Gamma	伽马
 	Reduce Noise from Analysis…	根据分析减少杂色…
 	Recommended Reduce Noise settings	建议的减少杂色设置
 	Noise Analysis…	噪点分析…

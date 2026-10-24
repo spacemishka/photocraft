@@ -3437,6 +3437,9 @@ curves	Smooth	Haluskan
 	Make Ramp Web Safe	Jadikan Gradasi Aman untuk Web
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Auto Correct…	Koreksi Otomatis…
+	Auto Correct	Koreksi Otomatis
+	Gamma	Gamma
 	Reduce Noise from Analysis…	Kurangi Noise dari Analisis…
 	Recommended Reduce Noise settings	Pengaturan pengurangan noise yang disarankan
 	Noise Analysis…	Analisis Noise…

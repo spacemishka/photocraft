@@ -212,6 +212,7 @@ pub static CATALOG: &[(&[&str], &str, Option<&str>, &str)] = &[
     (&["Image"], "Auto Tone", Some("Cmd+Shift+L"), "image.autoTone"),
     (&["Image"], "Auto Contrast", Some("Cmd+Alt+Shift+L"), "image.autoContrast"),
     (&["Image"], "Auto Color", Some("Cmd+Shift+B"), "image.autoColor"),
+    (&["Image"], "Auto Correct…", None, "image.autoCorrect"),
     (&["Image"], "---", None, "---"),
     (&["Image"], "Image Size…", Some("Cmd+Alt+I"), "image.imageSize"),
     (&["Image"], "Canvas Size…", Some("Cmd+Alt+C"), "image.canvasSize"),

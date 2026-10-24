@@ -601,6 +601,7 @@ fn wraps(id: &str) -> bool {
             | "file.fileInfo"
             | "analysis.noise"
             | "analysis.noise.reduce"
+            | "image.autoCorrect"
             | "file.automate.fitImage"
             | "file.automate.conditionalModeChange"
             | "file.automate.batch"
@@ -1589,6 +1590,33 @@ fn front(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: &Value)
                 return Some(Err("Reduce Noise has no dialog".into()));
             };
             Some(Ok(json!({"dialog": id, "noise": r})))
+        }
+        "image.autoCorrect" => {
+            let r = match app.session.execute("image.autoCorrect", json!({})) {
+                Ok(v) => v,
+                Err(e) => return Some(Err(e.to_string())),
+            };
+            let f = |k: &str| r.get(k).and_then(Value::as_f64).unwrap_or(0.0);
+            let g: Vec<f64> = r
+                .get("gamma")
+                .and_then(Value::as_array)
+                .map(|a| a.iter().map(|v| v.as_f64().unwrap_or(1.0)).collect())
+                .unwrap_or_else(|| vec![1.0, 1.0, 1.0]);
+            let mut lines = vec![format!(
+                "{}: {:.0}–{:.0} · {} {:.2} / {:.2} / {:.2}",
+                tl!("Levels"),
+                f("black"),
+                f("white"),
+                tl!("Gamma"),
+                g.first().copied().unwrap_or(1.0),
+                g.get(1).copied().unwrap_or(1.0),
+                g.get(2).copied().unwrap_or(1.0),
+            )];
+            if f("vibrance") >= 1.0 {
+                lines.push(format!("{}: {:+.0}", tl!("Vibrance"), f("vibrance")));
+            }
+            crate::notices::post(app, tl!("Auto Correct"), lines, false, None);
+            Some(Ok(r))
         }
         _ => None,
     }

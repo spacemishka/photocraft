@@ -615,7 +615,7 @@ fn merge_visible(s: &mut Session) -> Result<Value> {
 }
 
 /// Histogram of a pixel layer (8-bit bins per channel: R, G, B) inside the selection.
-fn histograms(surf: &Surface, area: Rect) -> [[u64; 256]; 3] {
+pub(crate) fn histograms(surf: &Surface, area: Rect) -> [[u64; 256]; 3] {
     let mut h = [[0u64; 256]; 3];
     let step = ((area.width() as u64 * area.height() as u64) / 4_000_000).max(1) as usize; // sample big images
     let mut row = vec![[0u8; 4]; area.width() as usize];
@@ -634,7 +634,7 @@ fn histograms(surf: &Surface, area: Rect) -> [[u64; 256]; 3] {
 }
 
 /// Black and white points with `clip` (fraction) clipped at each end.
-fn clip_points(h: &[u64; 256], clip: f64) -> (f32, f32) {
+pub(crate) fn clip_points(h: &[u64; 256], clip: f64) -> (f32, f32) {
     let total: u64 = h.iter().sum();
     if total == 0 {
         return (0.0, 1.0);
@@ -653,7 +653,7 @@ fn clip_points(h: &[u64; 256], clip: f64) -> (f32, f32) {
     (lo as f32 / 255.0, hi as f32 / 255.0)
 }
 
-fn median(h: &[u64; 256]) -> f32 {
+pub(crate) fn median(h: &[u64; 256]) -> f32 {
     let total: u64 = h.iter().sum();
     let mut acc = 0;
     for (i, v) in h.iter().enumerate() {
