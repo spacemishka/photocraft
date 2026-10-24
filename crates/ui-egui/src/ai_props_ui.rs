@@ -102,7 +102,10 @@ fn remove_object(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     // The hint may be written before a selection exists; only the Apply button needs one.
     {
         let ai = &mut app.ui.ai;
-        ui.add(TextEdit::singleline(&mut ai.remove_prompt).hint_text(tl!("Fill hint for the model (optional)")).desired_width(ui.available_width()));
+        widgets::checkbox(ui, &mut ai.remove_surroundings, tl!("Replace with surrounding background (no AI)"));
+        if !ai.remove_surroundings {
+            ui.add(TextEdit::singleline(&mut ai.remove_prompt).hint_text(tl!("Fill hint for the model (optional)")).desired_width(ui.available_width()));
+        }
         widgets::slider_row(ui, tl!("Strength"), &mut ai.remove_strength, 0.0..=100.0, "%", None);
         widgets::checkbox(ui, &mut ai.remove_new_layer, tl!("Output to a new layer"));
     }
@@ -111,14 +114,15 @@ fn remove_object(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         .inner
         .clicked();
     if clicked {
-        let (prompt, strength, new_layer) = {
+        let (prompt, strength, new_layer, surroundings) = {
             let ai = &app.ui.ai;
-            (ai.remove_prompt.clone(), ai.remove_strength, ai.remove_new_layer)
+            (ai.remove_prompt.clone(), ai.remove_strength, ai.remove_new_layer, ai.remove_surroundings)
         };
         let params = json!({
-            "prompt": if prompt.is_empty() { None::<&str> } else { Some(prompt.as_str()) },
+            "prompt": if prompt.is_empty() || surroundings { None::<&str> } else { Some(prompt.as_str()) },
             "strength": strength / 100.0,
             "output": if new_layer { "newLayer" } else { "inPlace" },
+            "source": if surroundings { "surroundings" } else { "model" },
         });
         run(app, "ai.removeObject", params);
     }

@@ -630,6 +630,8 @@ pub struct AiRetouchState {
     pub remove_strength: f32,
     /// `ai.removeObject` commits on a new layer instead of in place.
     pub remove_new_layer: bool,
+    /// `ai.removeObject` fills from the surrounding pixels (no model) instead of the backend.
+    pub remove_surroundings: bool,
     /// `ai.skinEnhance` strength, 0–100.
     pub skin_strength: f32,
     /// `ai.skinEnhance` smoothing radius in pixels.
@@ -647,6 +649,7 @@ impl Default for AiRetouchState {
             remove_prompt: String::new(),
             remove_strength: 85.0,
             remove_new_layer: true,
+            remove_surroundings: false,
             skin_strength: 50.0,
             skin_radius: 6.0,
             skin_preserve_detail: true,

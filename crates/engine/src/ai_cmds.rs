@@ -36,7 +36,7 @@ pub fn specs() -> Vec<CommandSpec> {
             label: "Remove Object",
             menu: &["Edit", "Content-Aware"],
             shortcut: None,
-            params: r#"{"prompt":text,"seed":u32=0,"strength":0.0..1.0=0.85,"output":"newLayer|inPlace"="newLayer"}"#,
+            params: r#"{"prompt":text,"seed":u32=0,"strength":0.0..1.0=0.85,"output":"newLayer|inPlace"="newLayer","source":"model|surroundings"="model"}"#,
             enabled: has_pixel_layer,
             run: remove_object,
             journal: true,
@@ -161,6 +161,13 @@ fn remove_object(s: &mut Session, p: &Value) -> Result<Value> {
     if !matches!(output_mode, "newLayer" | "inPlace") {
         return Err(bad(CMD, format!("unknown output `{output_mode}` (newLayer|inPlace)")));
     }
+    // `surroundings` replaces the object with the pixels around the selection (classical
+    // content-aware fill, no model); `model` sends the region to the AI backend.
+    let source = str_param(p, "source", "model");
+    if !matches!(source, "model" | "surroundings") {
+        return Err(bad(CMD, format!("unknown source `{source}` (model|surroundings)")));
+    }
+    let surroundings = source == "surroundings";
 
     let new_layer = output_mode == "newLayer";
 
@@ -184,6 +191,24 @@ fn remove_object(s: &mut Session, p: &Value) -> Result<Value> {
         "Remove Object",
         true,
         move |ctx| {
+            if surroundings {
+                ctx.progress(0.0, "Filling from the surroundings");
+                ctx.check()?;
+                let (window, filled) = crate::fill_cmds::content_aware_native(
+                    &surf,
+                    bounds,
+                    doc_bounds,
+                    true,
+                    seed.unwrap_or(1),
+                    |x, y| sel.sample_channel(x, y, 0) > 0.0,
+                    |_, _| true,
+                )?;
+                ctx.progress(0.9, "Refining");
+                ctx.check()?;
+                let mut out = Surface::new(surf.format());
+                out.write_region(window, &filled);
+                return Ok(out);
+            }
             ctx.progress(0.0, "Encoding");
             ctx.check()?;
             let generated = match backend.run(req) {
@@ -441,10 +466,13 @@ mod tests {
             let mut px = Vec::with_capacity((w * h * 4) as usize);
             for y in 0..h {
                 for x in 0..w {
-                    // A skin-toned, lightly textured patch: inside the HSV skin
-                    // window for ai.skinEnhance, and varied enough to inpaint.
+                    // Skin-toned, high-contrast blocks: inside the HSV skin window for
+                    // ai.skinEnhance, and coarse enough that a content-aware fill or a
+                    // 1/255-level comparison sees a change.
+                    let block = ((x / 8 + y / 8) % 2) as f32;
                     let t = ((x * 7 + y * 13) % 31) as f32 / 30.0;
-                    px.extend_from_slice(&[0.78 + 0.06 * t, 0.58 + 0.05 * t, 0.47 + 0.04 * t, 1.0]);
+                    let shade = 0.55 + 0.32 * block + 0.05 * t;
+                    px.extend_from_slice(&[shade * 0.93, shade * 0.72, shade * 0.58, 1.0]);
                 }
             }
             surf.write_region(r, &px);
@@ -532,6 +560,29 @@ mod tests {
         assert_eq!(st.doc.layers.len(), layers + 1, "the AI result landed as a new layer");
         assert_eq!(st.doc.layers.last().unwrap().name, "AI: Remove Object 1");
         assert!(st.doc.selection.is_some(), "the selection survives");
+    }
+
+    #[test]
+    fn remove_object_surroundings_mode_needs_no_backend() {
+        // A deliberately unusable backend: a configured sd-cli that cannot start. In surroundings
+        // mode it must never be touched, and the fill must still land.
+        let mut s = session_with_selection(48, 48);
+        s.prefs.edit(|p| p.ai.sd_cli = "definitely-not-here/sd-cli.exe".into());
+        let before = pixels(&s);
+        let Started::Job(id) = s.start("ai.removeObject", json!({"source": "surroundings"})).unwrap() else {
+            panic!("ai.removeObject must run as a background job");
+        };
+        let e = wait_event(&mut s, id);
+        assert!(matches!(e.outcome, JobOutcome::Done(_)), "{e:?}");
+        assert_ne!(pixels(&s), before, "the surroundings replaced the selected pixels");
+        assert_eq!(s.active().unwrap().doc.layers.last().unwrap().name, "AI: Remove Object 1");
+    }
+
+    #[test]
+    fn remove_object_rejects_an_unknown_source() {
+        let mut s = session_with_selection(48, 48);
+        let r = s.start("ai.removeObject", json!({"source": "magic"}));
+        assert!(r.is_err(), "unknown source must be refused");
     }
 
     #[test]

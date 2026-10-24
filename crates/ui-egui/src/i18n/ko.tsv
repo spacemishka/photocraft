@@ -3633,6 +3633,7 @@ curves	Smooth	매끄럽게
 	Make Ramp Web Safe	램프를 웹 안전 색상으로 만들기
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Replace with surrounding background (no AI)	주변 배경으로 바꾸기(AI 사용 안 함)
 	sd-cli Path	sd-cli 경로
 	Diffusion Model	확산 모델
 	VAE	VAE

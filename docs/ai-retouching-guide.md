@@ -165,6 +165,10 @@ gehören nicht in llama.cpp, sondern in stable-diffusion.cpp (Abschnitt 4) oder 
 2. **Eigenschaften › AI Retouching**:
    - **Test Connection** — zeigt `sd-cli: AI backend is reachable` (grün) oder den Fehler (rot).
    - **Remove Object**: Prompt (optional), Strength (Standard 85 %), „Output to a new layer“.
+   - **Replace with surrounding background (no AI)** — statt des Modells füllt PhotoCraft die
+     Auswahl aus den umliegenden Pixeln (klassisches Content-Aware/PatchMatch). Schnell, ohne
+     Modell, ohne Prompt; ideal für gleichmäßige Flächen (Himmel, Wand, Wiese). Der Prompt wird
+     dabei ignoriert und ausgeblendet.
 3. **Remove Object** klicken.
 
 **Prompt-Semantik (wichtig für FLUX Fill):** beschreibe, **was dort entstehen soll**, nicht was
@@ -228,6 +232,7 @@ Steuerkanal / MCP / CLI nutzen dieselben Befehls-IDs:
 {"method":"engine.execute","params":{"command":"ai.pingBackend","params":{}}}
 {"method":"engine.execute","params":{"command":"ai.removeObject","params":{"prompt":"bare wall","strength":0.85,"output":"newLayer","seed":7}}}
 {"method":"engine.execute","params":{"command":"ai.skinEnhance","params":{"strength":60,"smoothRadius":6,"preserveDetail":true}}}
+{"method":"engine.execute","params":{"command":"ai.removeObject","params":{"output":"newLayer","source":"surroundings"}}}
 ```
 
 Lange Befehle laufen als Job; `"wait": false` gibt sofort `{job, pending:true}` zurück, Fortschritt

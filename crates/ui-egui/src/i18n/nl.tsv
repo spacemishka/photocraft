@@ -4182,6 +4182,7 @@ curves	Smooth	Vloeiend maken
 	Make Ramp Web Safe	Balk beperken tot webkleuren
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Replace with surrounding background (no AI)	Vervangen door de omringende achtergrond (zonder AI)
 	sd-cli Path	sd-cli-pad
 	Diffusion Model	Diffusiemodel
 	VAE	VAE

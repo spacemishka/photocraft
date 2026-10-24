@@ -74,7 +74,8 @@ L0  photocraft-codecs, photocraft-raster, photocraft-color, photocraft-geom
     "prompt": "clear background",
     "seed": 42,
     "strength": 0.85,
-    "output": "newLayer"
+    "output": "newLayer",
+    "source": "model"
   }
   ```
 - **Behavior:**
@@ -83,6 +84,10 @@ L0  photocraft-codecs, photocraft-raster, photocraft-color, photocraft-geom
   3. Sends request to local server (`POST /api/generate`).
   4. If server unreachable, invokes `content_aware_native` (classical PatchMatch).
   5. Commits result non-destructively as a new raster layer above the active layer (or in-place if `"output": "inPlace"`).
+
+`"source": "surroundings"` skips steps 2–4 entirely: the selection is filled from the pixels
+around it with `content_aware_native` (Photoshop's Content-Aware Fill), no model and no prompt
+needed. `"source": "model"` (default) uses the configured backend.
 
 ### 4.2 `ai.skinEnhance`
 - **ID:** `ai.skinEnhance`
