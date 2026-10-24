@@ -4039,6 +4039,14 @@ curves	Smooth	Wygładź
 	Make Ramp Web Safe	Ogranicz pasek do kolorów internetowych
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	sd-cli Path	Ścieżka sd-cli
+	Diffusion Model	Model dyfuzyjny
+	VAE	VAE
+	CLIP-L	CLIP-L
+	T5-XXL	T5-XXL
+	Extra sd-cli Arguments	Dodatkowe argumenty sd-cli
+	ComfyUI URL	Adres URL ComfyUI
+	ComfyUI Workflow (API JSON)	Przepływ pracy ComfyUI (JSON API)
 	AI…	AI…
 	AI	AI
 	AI Retouching	Retusz AI

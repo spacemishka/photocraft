@@ -991,6 +991,25 @@ pub struct AiPrefs {
     /// Maximum region size in megapixels sent for inference. Larger selections
     /// are tiled or rejected with an informative error.
     pub max_region_mpx: f32,
+    /// Base URL of a local ComfyUI server (`http://127.0.0.1:8188`). Used when
+    /// `comfy_workflow` names a workflow.
+    pub comfy_url: String,
+    /// Path to a ComfyUI workflow in API format (JSON) with `{{image}}`, `{{mask}}`,
+    /// `{{prompt}}`, `{{negative_prompt}}`, `{{seed}}`, `{{strength}}`, `{{width}}` and
+    /// `{{height}}` placeholders. Empty: use the Ollama-style `local_url` server.
+    pub comfy_workflow: String,
+    /// Path to `sd-cli` (stable-diffusion.cpp). Non-empty: run inpainting through it.
+    pub sd_cli: String,
+    /// `--diffusion-model` for `sd-cli` (FLUX.1 Fill or an SD inpainting model).
+    pub sd_model: String,
+    /// `--vae` for `sd-cli`.
+    pub sd_vae: String,
+    /// `--clip_l` for `sd-cli` (may be empty).
+    pub sd_clip_l: String,
+    /// `--t5xxl` for `sd-cli` (FLUX needs it).
+    pub sd_t5xxl: String,
+    /// Extra `sd-cli` arguments, e.g. `--steps 20 --guidance 30 --cfg-scale 1`.
+    pub sd_args: String,
 }
 
 impl Default for AiPrefs {
@@ -1000,6 +1019,14 @@ impl Default for AiPrefs {
             local_model: "llava".into(),
             local_timeout_secs: 120,
             max_region_mpx: 24.0,
+            comfy_url: "http://127.0.0.1:8188".into(),
+            comfy_workflow: String::new(),
+            sd_cli: String::new(),
+            sd_model: String::new(),
+            sd_vae: String::new(),
+            sd_clip_l: String::new(),
+            sd_t5xxl: String::new(),
+            sd_args: "--steps 20 --vae-tiling".into(),
         }
     }
 }

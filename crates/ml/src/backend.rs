@@ -85,21 +85,7 @@ impl LocalBackend {
     /// Encode a region of `surface` as PNG (base64-encoded string).
     #[cfg(feature = "native")]
     fn encode_png(surface: &photocraft_raster::Surface, bounds: photocraft_geom::Rect) -> Result<String, MlError> {
-        let (w, h) = (bounds.width() as usize, bounds.height() as usize);
-        if w == 0 || h == 0 {
-            return Err(MlError::BadParam("image has zero dimension".into()));
-        }
-        let mut rgba8_tuples = vec![[0u8; 4]; w * h];
-        surface.read_rgba8_into(bounds, &mut rgba8_tuples);
-        let mut raw = Vec::with_capacity(w * h * 4);
-        for px in rgba8_tuples {
-            raw.extend_from_slice(&px);
-        }
-        let img = photocraft_codecs::Image::from_u8(w as u32, h as u32, photocraft_codecs::ChannelLayout::Rgba, raw)
-            .map_err(|e| MlError::InvalidOutput(e.to_string()))?;
-        let bytes = photocraft_codecs::encode(&img, photocraft_codecs::Format::Png, &photocraft_codecs::EncodeOptions::default())
-            .map_err(|e| MlError::InvalidOutput(e.to_string()))?;
-        Ok(base64_encode(&bytes))
+        Ok(base64_encode(&encode_png_bytes(surface, bounds)?))
     }
 
     /// Decode a base64-encoded PNG into a surface covering `target_rect`.
@@ -107,11 +93,30 @@ impl LocalBackend {
     fn decode_png(b64: &str, target_rect: photocraft_geom::Rect) -> Result<photocraft_raster::Surface, MlError> {
         let bytes = base64_decode(b64)?;
         let img = photocraft_codecs::decode(&bytes).map_err(|e| MlError::InvalidOutput(e.to_string()))?;
-        let rgba8 = img.to_rgba8();
-        let mut surf = photocraft_raster::Surface::new(photocraft_color::PixelFormat::RGBA8);
-        surf.write_interleaved(target_rect, &rgba8);
-        Ok(surf)
+        super::pixels::surface_from_image(&img, target_rect)
     }
+}
+
+/// A region of `surface` as PNG bytes (shared by the HTTP backends).
+#[cfg(feature = "native")]
+pub(crate) fn encode_png_bytes(
+    surface: &photocraft_raster::Surface,
+    bounds: photocraft_geom::Rect,
+) -> Result<Vec<u8>, MlError> {
+    let (w, h) = (bounds.width() as usize, bounds.height() as usize);
+    if w == 0 || h == 0 {
+        return Err(MlError::BadParam("image has zero dimension".into()));
+    }
+    let mut rgba8_tuples = vec![[0u8; 4]; w * h];
+    surface.read_rgba8_into(bounds, &mut rgba8_tuples);
+    let mut raw = Vec::with_capacity(w * h * 4);
+    for px in rgba8_tuples {
+        raw.extend_from_slice(&px);
+    }
+    let img = photocraft_codecs::Image::from_u8(w as u32, h as u32, photocraft_codecs::ChannelLayout::Rgba, raw)
+        .map_err(|e| MlError::InvalidOutput(e.to_string()))?;
+    photocraft_codecs::encode(&img, photocraft_codecs::Format::Png, &photocraft_codecs::EncodeOptions::default())
+        .map_err(|e| MlError::InvalidOutput(e.to_string()))
 }
 
 impl InferenceBackend for LocalBackend {
@@ -210,7 +215,7 @@ impl LocalBackend {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 #[cfg(feature = "native")]
-fn make_client(timeout_secs: u32) -> Result<reqwest::blocking::Client, MlError> {
+pub(crate) fn make_client(timeout_secs: u32) -> Result<reqwest::blocking::Client, MlError> {
     reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(u64::from(timeout_secs)))
         .build()

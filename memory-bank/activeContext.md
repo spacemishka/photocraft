@@ -40,5 +40,15 @@
   - Menu rows: Edit › Content-Aware › Remove Object…, Filter › Neural Filters › Skin Enhance… (`menu_catalog.rs`); Edit › Preferences › AI… (`edit.preferences.ai`).
   - Properties panel › AI Retouching (`ai_props_ui.rs`, `UiState.ai`): backend test, Skin Enhance + Remove Object controls ("Output to a new layer").
 - **Verification (2026-10-24):** engine lib 1700 passed; ui-egui lib 2966 passed; clippy `-D warnings` clean (engine, ui-egui, ml); `cargo xtask wasm` 25/25 ok; `panic_hunt --ignored` ok; `xtask parity` 634/634 (FLOOR raised); `xtask scorecard` regenerated (never-crash lints now 30/30).
+- **Local AI backends (2026-10-24, after the upstream sync):**
+  - `ComfyUI` (`crates/ml/src/comfy.rs`): uploads source + mask, patches the user's API-format
+    workflow through `{{image}}`, `{{mask}}`, `{{prompt}}`, `{{negative_prompt}}`, `{{seed}}`,
+    `{{strength}}`, `{{width}}`, `{{height}}`, `{{task}}`, then `/prompt` → `/history` → `/view`.
+  - `stable-diffusion.cpp` (`crates/ml/src/sdcli.rs`): spawns `sd-cli` per request with
+    `-i`/`--mask`/`--diffusion-model`/`--vae`/`--clip_l`/`--t5xxl`, temp PNGs, timeout kill.
+  - Selection order: `sdCli` > `comfyWorkflow` > `localUrl`; `ai.pingBackend` reports the backend.
+  - `crates/ml/src/pixels.rs` resamples server images to the region (the old decode could panic on
+    a resolution mismatch). Both backends support inpainting only; Skin Enhance keeps the HSV mask.
+  - Docs: `docs/requirements-ai-inline-editing.md` §6 (ComfyUI) and §7 (sd-cli).
 - **Next steps:** nothing left for MVP-2. Ranked focus returns to **G1 PSD acceptance** — fix Photoshop rejections (#1281, #2469) and raise the Photoshop oracle floor (≥188/256 in the current scorecard) toward 200+.
 

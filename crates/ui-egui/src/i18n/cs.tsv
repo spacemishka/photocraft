@@ -4168,6 +4168,14 @@ cameraRaw	Dehaze	Odstranění oparu
 	Make Ramp Web Safe	Omezit pruh na webové barvy
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	sd-cli Path	Cesta k sd-cli
+	Diffusion Model	Difuzní model
+	VAE	VAE
+	CLIP-L	CLIP-L
+	T5-XXL	T5-XXL
+	Extra sd-cli Arguments	Další argumenty sd-cli
+	ComfyUI URL	URL ComfyUI
+	ComfyUI Workflow (API JSON)	Pracovní postup ComfyUI (JSON API)
 	AI…	AI…
 	AI	AI
 	AI Retouching	AI retušování

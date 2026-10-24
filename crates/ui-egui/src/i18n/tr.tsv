@@ -4151,6 +4151,14 @@ cameraData	Lens	Lens
 	Make Ramp Web Safe	Şeridi Web Renkleriyle Sınırla
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	sd-cli Path	sd-cli yolu
+	Diffusion Model	Difüzyon modeli
+	VAE	VAE
+	CLIP-L	CLIP-L
+	T5-XXL	T5-XXL
+	Extra sd-cli Arguments	Ek sd-cli bağımsız değişkenleri
+	ComfyUI URL	ComfyUI URL
+	ComfyUI Workflow (API JSON)	ComfyUI iş akışı (API JSON)
 	AI…	AI…
 	AI	AI
 	AI Retouching	AI Rötuş

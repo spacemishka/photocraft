@@ -17,7 +17,7 @@
 use photocraft_algo::retouch::local_blur;
 use photocraft_doc::{Layer, LayerContent, LayerId};
 use photocraft_geom::Rect;
-use photocraft_ml::{InferenceBackend, InferenceRequest, InferenceResult, LocalBackend, MlError, Task};
+use photocraft_ml::{ComfyBackend, InferenceBackend, InferenceRequest, InferenceResult, LocalBackend, MlError, SdCliBackend, Task};
 use photocraft_raster::Surface;
 use serde_json::{Value, json};
 
@@ -93,6 +93,24 @@ fn str_param<'a>(p: &'a Value, k: &str, d: &'a str) -> &'a str {
 
 fn make_backend(s: &Session) -> Box<dyn InferenceBackend> {
     let ai = &s.prefs().ai;
+    if !ai.sd_cli.trim().is_empty() {
+        return Box::new(SdCliBackend::new(
+            ai.sd_cli.clone(),
+            ai.sd_model.clone(),
+            ai.sd_vae.clone(),
+            ai.sd_clip_l.clone(),
+            ai.sd_t5xxl.clone(),
+            ai.sd_args.clone(),
+            ai.local_timeout_secs,
+        ));
+    }
+    if !ai.comfy_workflow.trim().is_empty() {
+        return Box::new(ComfyBackend::new(
+            ai.comfy_url.clone(),
+            ai.comfy_workflow.clone(),
+            ai.local_timeout_secs,
+        ));
+    }
     Box::new(LocalBackend::new(
         ai.local_url.clone(),
         ai.local_model.clone(),
@@ -351,10 +369,13 @@ fn freq_sep_smooth(
 
 fn ping_backend(s: &mut Session, _p: &Value) -> Result<Value> {
     let backend = make_backend(s);
+    let id = backend.id();
     match backend.ping() {
-        Ok(()) => Ok(json!({ "ok": true, "backend": backend.id() })),
-        Err(MlError::Unsupported) => Ok(json!({ "ok": false, "reason": "not available in this build (wasm)" })),
-        Err(e) => Ok(json!({ "ok": false, "reason": e.to_string() })),
+        Ok(()) => Ok(json!({ "ok": true, "backend": id })),
+        Err(MlError::Unsupported) => {
+            Ok(json!({ "ok": false, "backend": id, "reason": "not available in this build (wasm)" }))
+        }
+        Err(e) => Ok(json!({ "ok": false, "backend": id, "reason": e.to_string() })),
     }
 }
 
@@ -483,6 +504,19 @@ mod tests {
         assert!(r.is_ok());
         let v = r.expect("ping should not panic");
         assert!(v.get("ok").is_some(), "response must have `ok` field");
+        assert_eq!(v["backend"], json!("local"));
+    }
+
+    #[test]
+    fn ping_reports_the_comfyui_backend_when_a_workflow_is_configured() {
+        let mut s = make_session();
+        s.prefs.edit(|p| {
+            p.ai.comfy_url = "http://127.0.0.1:9".into();
+            p.ai.comfy_workflow = "no-such-workflow.json".into();
+        });
+        let v = ping_backend(&mut s, &json!({})).expect("ping answers");
+        assert_eq!(v["backend"], json!("comfyui"));
+        assert_eq!(v["ok"], json!(false), "nothing listens on port 9: {v}");
     }
 
     #[test]

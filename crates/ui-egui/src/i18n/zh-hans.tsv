@@ -3091,6 +3091,14 @@ curves	Smooth	平滑
 	Driver: {driver}	驱动程序：{driver}
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	sd-cli Path	sd-cli 路径
+	Diffusion Model	扩散模型
+	VAE	VAE
+	CLIP-L	CLIP-L
+	T5-XXL	T5-XXL
+	Extra sd-cli Arguments	sd-cli 附加参数
+	ComfyUI URL	ComfyUI URL
+	ComfyUI Workflow (API JSON)	ComfyUI 工作流（API JSON）
 	AI…	AI…
 	AI	AI
 	AI Retouching	AI 修饰

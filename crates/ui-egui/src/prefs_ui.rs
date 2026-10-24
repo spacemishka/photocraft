@@ -1295,6 +1295,31 @@ fn humanize(key: &str) -> String {
     if key == "gpuMemoryMb" {
         return "GPU Memory (MB, 0 = Automatic)".into();
     }
+    // AI: the ComfyUI alternative to the Ollama-style local server (AI inline editing).
+    if key == "comfyUrl" {
+        return "ComfyUI URL".into();
+    }
+    if key == "comfyWorkflow" {
+        return "ComfyUI Workflow (API JSON)".into();
+    }
+    if key == "sdCli" {
+        return "sd-cli Path".into();
+    }
+    if key == "sdModel" {
+        return "Diffusion Model".into();
+    }
+    if key == "sdVae" {
+        return "VAE".into();
+    }
+    if key == "sdClipL" {
+        return "CLIP-L".into();
+    }
+    if key == "sdT5xxl" {
+        return "T5-XXL".into();
+    }
+    if key == "sdArgs" {
+        return "Extra sd-cli Arguments".into();
+    }
     let mut s = String::new();
     for (i, ch) in key.chars().enumerate() {
         if i == 0 {

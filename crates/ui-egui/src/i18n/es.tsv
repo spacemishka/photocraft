@@ -4384,6 +4384,14 @@ navigator	Zoom	Zoom
 	Make Ramp Web Safe	Hacer rampa segura para web
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	sd-cli Path	Ruta de sd-cli
+	Diffusion Model	Modelo de difusión
+	VAE	VAE
+	CLIP-L	CLIP-L
+	T5-XXL	T5-XXL
+	Extra sd-cli Arguments	Argumentos adicionales de sd-cli
+	ComfyUI URL	URL de ComfyUI
+	ComfyUI Workflow (API JSON)	Flujo de trabajo de ComfyUI (JSON de API)
 	AI…	IA…
 	AI	IA
 	AI Retouching	Retoque con IA

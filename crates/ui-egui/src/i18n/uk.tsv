@@ -4132,6 +4132,14 @@ curves	Smooth	Згладити
 	Make Ramp Web Safe	Зробити шкалу безпечною для вебу
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	sd-cli Path	Шлях до sd-cli
+	Diffusion Model	Дифузійна модель
+	VAE	VAE
+	CLIP-L	CLIP-L
+	T5-XXL	T5-XXL
+	Extra sd-cli Arguments	Додаткові аргументи sd-cli
+	ComfyUI URL	URL ComfyUI
+	ComfyUI Workflow (API JSON)	Робочий процес ComfyUI (JSON API)
 	AI…	ШІ…
 	AI	ШІ
 	AI Retouching	ІІ-ретушування

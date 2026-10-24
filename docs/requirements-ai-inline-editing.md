@@ -118,4 +118,51 @@ Preferences stored under `ai`:
 - `localModel` (string, default: `"llava"`): Model tag for vision/inpaint tasks.
 - `localTimeoutSecs` (u32, default: `120`): Maximum time to wait for local generation.
 - `maxRegionMpx` (f32, default: `24.0`): Guard against OOM on massive canvas areas.
+- `comfyUrl` (string, default: `"http://127.0.0.1:8188"`): Local ComfyUI server.
+- `comfyWorkflow` (string, default: `""`): Path to a ComfyUI workflow in API format. **Empty uses the
+  Ollama-style `localUrl` server**; non-empty switches every AI command to ComfyUI.
+- `sdCli`, `sdModel`, `sdVae`, `sdClipL`, `sdT5xxl`, `sdArgs`: the stable-diffusion.cpp route. A
+  non-empty `sdCli` wins over `comfyWorkflow`; see §7.
+
+## 6. ComfyUI backend (`crates/ml/src/comfy.rs`)
+
+ComfyUI runs the diffusion models (FLUX.1 Fill, SDXL inpainting) that a llama.cpp server cannot.
+Export the workflow with **Workflow ▸ Export (API)**, then use these placeholders anywhere in a
+string value; the backend patches the JSON before queueing it:
+
+| Placeholder | Value |
+|---|---|
+| `{{image}}`, `{{mask}}` | input names of the uploaded source/mask PNG (white = repaint) |
+| `{{prompt}}`, `{{negative_prompt}}` | the command's text |
+| `{{seed}}` | number (`KSampler.seed`) |
+| `{{strength}}` | number 0..1 (`KSampler.denoise`) |
+| `{{width}}`, `{{height}}` | the selected region's pixel size |
+| `{{task}}` | `inpaint` |
+
+A value that is exactly a numeric placeholder becomes a JSON number, so it can feed `KSampler`
+and `EmptyLatentImage` nodes directly. Flow: `POST /upload/image` (source and mask) →
+`POST /prompt` → poll `GET /history/{id}` → `GET /view` for the first output image; the result is
+resampled to the selection. `ai.pingBackend` uses `GET /system_stats` and reports
+`"backend": "comfyui"`. Segmentation is not supported by this backend, so Skin Enhance keeps its
+classical HSV mask and only smooths.
+
+FLUX.1 Fill dev on 16 GB: `flux1-fill-dev-Q4_0.gguf` (≈6.9 GB) + `ae.safetensors` + `clip_l` +
+`t5xxl` Q4_K_M (≈3.1 GB), all from `second-state/FLUX.1-Fill-dev-GGUF` and
+`comfyanonymous/flux_text_encoders`; the model is non-commercial (`FLUX.1 [dev]` licence).
+
+## 7. stable-diffusion.cpp backend (`crates/ml/src/sdcli.rs`)
+
+`sdCli` (the path to `sd-cli.exe`) selects this backend; it has no server and spawns one process
+per request. Files: `sdModel` (`--diffusion-model`, e.g.
+`F:\AI\models\flux-fill\flux1-fill-dev-Q4_0.gguf`), `sdVae` (`ae.safetensors`), `sdClipL`
+(`clip_l.safetensors`), `sdT5xxl` (FLUX needs it, Q4_K_M is enough), `sdArgs` (default
+`--steps 20 --vae-tiling`; for FLUX add `--guidance 30 --cfg-scale 1 --sampling-method euler`).
+
+The command is `sd-cli --diffusion-model … --vae … -i source.png --mask mask.png -o out.png
+-W <w> -H <h> -p "…" --strength <s>`, with white in the mask marking the area to repaint. The
+region is rounded up to a multiple of 32 for the model and resampled back. The process is killed
+after `localTimeoutSecs` (raise it for a cold FLUX load). A missing binary or model is reported as
+a configuration error; an unreachable/misconfigured run does not silently fall back.
+
+
 

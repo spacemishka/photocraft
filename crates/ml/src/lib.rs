@@ -21,11 +21,17 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod backend;
+pub mod comfy;
 pub mod error;
+#[cfg(any(feature = "native", test))]
+pub(crate) mod pixels;
 pub mod request;
+pub mod sdcli;
 pub mod task;
 
 pub use backend::{ClassicalFallback, InferenceBackend, LocalBackend};
+pub use comfy::ComfyBackend;
+pub use sdcli::SdCliBackend;
 pub use error::MlError;
 pub use request::{InferenceRequest, InferenceResult};
 pub use task::Task;
