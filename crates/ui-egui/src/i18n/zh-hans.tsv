@@ -3091,6 +3091,8 @@ curves	Smooth	平滑
 	Driver: {driver}	驱动程序：{driver}
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Reduce Noise from Analysis…	根据分析减少杂色…
+	Recommended Reduce Noise settings	建议的减少杂色设置
 	Noise Analysis…	噪点分析…
 	Noise Analysis	噪点分析
 	Flat areas	平坦区域

@@ -600,6 +600,7 @@ fn wraps(id: &str) -> bool {
             | "file.closeOthers"
             | "file.fileInfo"
             | "analysis.noise"
+            | "analysis.noise.reduce"
             | "file.automate.fitImage"
             | "file.automate.conditionalModeChange"
             | "file.automate.batch"
@@ -1544,8 +1545,11 @@ fn front(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: &Value)
             };
             let f = |k: &str| r.get(k).and_then(Value::as_f64).unwrap_or(0.0);
             let ch = |i: usize| r.get("sigma8").and_then(|v| v.get(i)).and_then(Value::as_f64).unwrap_or(0.0);
+            let rec = &r["recommended"];
+            let rn = |k: &str| rec.get(k).and_then(Value::as_f64).unwrap_or(0.0);
+            let jpeg = rec.get("removeJpegArtifact").and_then(Value::as_bool).unwrap_or(false);
             let lines = vec![
-                format!("σ (8-bit): {:.1}  ·  R {:.1}  G {:.1}  B {:.1}", f("luma8"), ch(0), ch(1), ch(2)),
+                format!("σ (8-bit): {:.1}  ·  R {:.1} G {:.1} B {:.1}", f("luma8"), ch(0), ch(1), ch(2)),
                 format!("{}: {:.1}", tl!("Flat areas"), f("flat8")),
                 format!(
                     "{}: {:.2}% / {:.2}%",
@@ -1553,11 +1557,38 @@ fn front(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: &Value)
                     f("clippedShadows") * 100.0,
                     f("clippedHighlights") * 100.0
                 ),
-                format!("{}: {:.0}", tl!("Suggested Reduce Noise"), f("suggestedReduceNoise")),
+                format!(
+                    "{}: {} {:.0} · {} {:.0} · {} {:.0}",
+                    tl!("Recommended Reduce Noise settings"),
+                    tl!("Strength"),
+                    rn("strength"),
+                    tl!("Preserve details"),
+                    rn("preserveDetails"),
+                    tl!("Reduce Color Noise"),
+                    rn("reduceColorNoise")
+                ),
+                format!(
+                    "{} {:.0} · {}: {}",
+                    tl!("Sharpen Details"),
+                    rn("sharpenDetails"),
+                    tl!("Remove Jpeg Artifact"),
+                    if jpeg { "✓" } else { "—" }
+                ),
                 format!("{}: {}", tl!("Samples"), r.get("samples").and_then(Value::as_u64).unwrap_or(0)),
             ];
             crate::notices::post(app, tl!("Noise Analysis"), lines, false, None);
             Some(Ok(r))
+        }
+        "analysis.noise.reduce" => {
+            let r = match app.session.execute("analysis.noise", json!({})) {
+                Ok(v) => v,
+                Err(e) => return Some(Err(e.to_string())),
+            };
+            let rec = r.get("recommended").and_then(Value::as_object).cloned().unwrap_or_default();
+            let Some(id) = crate::filter_dialog::open_with(app, "filter.noise.reduceNoise", rec) else {
+                return Some(Err("Reduce Noise has no dialog".into()));
+            };
+            Some(Ok(json!({"dialog": id, "noise": r})))
         }
         _ => None,
     }

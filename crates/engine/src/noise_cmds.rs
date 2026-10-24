@@ -23,6 +23,10 @@ pub struct NoiseStats {
     pub luma: f32,
     /// Luminance noise of the quietest decile of 16×16 blocks, 0..1.
     pub flat: f32,
+    /// Chroma noise (R−G, B−(R+G)/2), 0..1.
+    pub chroma: f32,
+    /// 8-pixel block-edge strength relative to other edges; JPEG blocks read > 1.
+    pub blockiness: f32,
     /// Fraction of sampled pixels whose channels are all at the black point.
     pub clipped_shadows: f32,
     /// Fraction of sampled pixels whose channels are all at the white point.
@@ -32,9 +36,23 @@ pub struct NoiseStats {
 }
 
 impl NoiseStats {
-    /// A denoise strength (0..100) that matches the flat-area grain, for Reduce Noise.
-    pub fn suggested_strength(&self) -> f32 {
-        (self.flat * 255.0 * 8.0).clamp(0.0, 100.0)
+    /// Values for Filter › Noise › Reduce Noise, from the measurements.
+    pub fn recommendations(&self) -> Value {
+        let f8 = self.flat * 255.0;
+        let strength = if f8 < 0.4 { 0.0 } else { (f8 * 1.5).round().clamp(1.0, 10.0) };
+        // Less smoothing when the grain is fine, so texture survives.
+        let preserve = (60.0 + (3.0 - f8) * 10.0).clamp(20.0, 90.0).round();
+        let luma = (self.luma * 255.0).max(0.1);
+        let color = (40.0 * ((self.chroma * 255.0) / luma).clamp(0.0, 2.0)).clamp(0.0, 100.0).round();
+        let sharpen = ((f8 - 1.0) * 8.0).clamp(0.0, 60.0).round();
+        let jpeg = self.blockiness > 1.15 && f8 > 0.5;
+        json!({
+            "strength": strength,
+            "preserveDetails": preserve,
+            "reduceColorNoise": color,
+            "sharpenDetails": sharpen,
+            "removeJpegArtifact": jpeg,
+        })
     }
 
     pub fn to_json(&self) -> Value {
@@ -47,9 +65,11 @@ impl NoiseStats {
             "luma8": s8(self.luma),
             "flat": self.flat,
             "flat8": s8(self.flat),
+            "chroma8": s8(self.chroma),
+            "blockiness": (self.blockiness * 100.0).round() / 100.0,
             "clippedShadows": self.clipped_shadows,
             "clippedHighlights": self.clipped_highlights,
-            "suggestedReduceNoise": self.suggested_strength(),
+            "recommended": self.recommendations(),
             "samples": self.samples,
         })
     }
@@ -72,6 +92,12 @@ pub fn measure(surf: &Surface, bounds: Rect) -> std::result::Result<NoiseStats, 
 
     let mut sums = vec![0.0f64; colour];
     let mut luma_sum = 0.0f64;
+    let mut chroma_sum = 0.0f64;
+    let mut chroma_n = 0u64;
+    let mut block_on = 0.0f64;
+    let mut block_on_n = 0u64;
+    let mut block_off = 0.0f64;
+    let mut block_off_n = 0u64;
     let mut n = 0u64;
     let mut shadows = 0u64;
     let mut highlights = 0u64;
@@ -86,6 +112,14 @@ pub fn measure(surf: &Surface, bounds: Rect) -> std::result::Result<NoiseStats, 
             0.2126 * sample(x, y, 0) + 0.7152 * sample(x, y, 1) + 0.0722 * sample(x, y, 2)
         } else {
             (0..colour).map(|c| sample(x, y, c)).sum::<f32>() / colour as f32
+        }
+    };
+    // The two chroma planes of an RGB image: R−G and B−(R+G)/2.
+    let chroma = |x: i32, y: i32, plane: usize| -> f32 {
+        if plane == 0 {
+            sample(x, y, 0) - sample(x, y, 1)
+        } else {
+            sample(x, y, 2) - 0.5 * (sample(x, y, 0) + sample(x, y, 1))
         }
     };
 
@@ -103,6 +137,23 @@ pub fn measure(surf: &Surface, bounds: Rect) -> std::result::Result<NoiseStats, 
             let lp = luma(x, y);
             let lr = 4.0 * lp - luma(x - 1, y) - luma(x + 1, y) - luma(x, y - 1) - luma(x, y + 1);
             luma_sum += f64::from(lr.abs());
+            if colour >= 3 {
+                for plane in 0..2 {
+                    let c = chroma(x, y, plane);
+                    let r = 4.0 * c - chroma(x - 1, y, plane) - chroma(x + 1, y, plane) - chroma(x, y - 1, plane) - chroma(x, y + 1, plane);
+                    chroma_sum += f64::from(r.abs());
+                    chroma_n += 1;
+                }
+            }
+            // JPEG's 8-pixel grid: the discontinuity at block boundaries against all other edges.
+            let edge = (lp - luma(x - 1, y)).abs();
+            if x % 8 == 0 {
+                block_on += f64::from(edge);
+                block_on_n += 1;
+            } else {
+                block_off += f64::from(edge);
+                block_off_n += 1;
+            }
             if dark {
                 shadows += 1;
             }
@@ -145,6 +196,12 @@ pub fn measure(surf: &Surface, bounds: Rect) -> std::result::Result<NoiseStats, 
         sigma,
         luma: luma_sigma,
         flat,
+        chroma: if chroma_n > 0 { to_sigma(chroma_sum, chroma_n) } else { 0.0 },
+        blockiness: {
+            let off = if block_off_n > 0 { block_off / block_off_n as f64 } else { 0.0 };
+            let on = if block_on_n > 0 { block_on / block_on_n as f64 } else { 0.0 };
+            if off > 1e-6 { (on / off) as f32 } else { 1.0 }
+        },
         clipped_shadows: shadows as f32 / n as f32,
         clipped_highlights: highlights as f32 / n as f32,
         samples: n,
@@ -192,16 +249,31 @@ fn noise(s: &mut Session, p: &Value) -> Result<Value> {
 
 /// Every command of this module.
 pub fn specs() -> Vec<CommandSpec> {
-    vec![CommandSpec {
-        id: "analysis.noise",
-        label: "Noise Analysis…",
-        menu: &["Filter", "Noise"],
-        shortcut: None,
-        params: r#"{"layer":u32?} (the active layer; a selection narrows the area)"#,
-        enabled: has_pixel_layer,
-        run: noise,
-        journal: false,
-    }]
+    let params = r#"{"layer":u32?} (the active layer; a selection narrows the area)"#;
+    vec![
+        CommandSpec {
+            id: "analysis.noise",
+            label: "Noise Analysis…",
+            menu: &["Filter", "Noise"],
+            shortcut: None,
+            params,
+            enabled: has_pixel_layer,
+            run: noise,
+            journal: false,
+        },
+        // The UI runs the analysis and opens Reduce Noise with its recommendation; the engine
+        // entry only measures (agents get the same report as `analysis.noise`).
+        CommandSpec {
+            id: "analysis.noise.reduce",
+            label: "Reduce Noise from Analysis…",
+            menu: &["Filter", "Noise"],
+            shortcut: None,
+            params,
+            enabled: has_pixel_layer,
+            run: noise,
+            journal: false,
+        },
+    ]
 }
 
 #[cfg(test)]
@@ -268,7 +340,12 @@ mod tests {
         let v = noise(&mut s, &json!({})).expect("the analysis runs");
         assert!(v["luma8"].as_f64().is_some_and(|v| v >= 0.0), "{v}");
         assert!(v["samples"].as_u64().is_some_and(|n| n > 0), "{v}");
-        assert!(v["suggestedReduceNoise"].as_f64().is_some_and(|v| (0.0..=100.0).contains(&v)), "{v}");
+        let rec = &v["recommended"];
+        assert!(rec["strength"].as_f64().is_some_and(|s| (0.0..=10.0).contains(&s)), "{v}");
+        for key in ["preserveDetails", "reduceColorNoise", "sharpenDetails"] {
+            assert!(rec[key].as_f64().is_some_and(|s| (0.0..=100.0).contains(&s)), "{key}: {v}");
+        }
+        assert!(rec["removeJpegArtifact"].is_boolean(), "{v}");
 
         let mut empty = Session::new();
         assert!(noise(&mut empty, &json!({})).is_err(), "no document → Err");
@@ -277,6 +354,25 @@ mod tests {
         s.execute("file.new", json!({"width": 32, "height": 32})).unwrap();
         s.execute("layer.new.group", json!({"name": "Group"})).unwrap();
         assert!(noise(&mut s, &json!({})).is_err(), "a group has no pixel surface");
+    }
+
+    #[test]
+    fn jpeg_block_edges_are_detected() {
+        let mut seed = 7u32;
+        let mut rnd = move || {
+            seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
+            (seed >> 8) as f32 / 16_777_216.0 - 0.5
+        };
+        // 8-pixel columns with a step at every boundary, plus grain inside the blocks.
+        let s = doc_with(|x, _| {
+            let base = if (x / 8) % 2 == 0 { 0.4 } else { 0.6 };
+            let v = base + 0.04 * rnd();
+            [v, v, v, 1.0]
+        }, 64, 64);
+        let surf = pixels(&s);
+        let stats = measure(&surf, surf.content_bounds()).expect("measured");
+        assert!(stats.blockiness > 1.5, "8-pixel block edges stand out: {}", stats.blockiness);
+        assert_eq!(stats.recommendations()["removeJpegArtifact"], json!(true), "{}", stats.to_json());
     }
 
     #[test]

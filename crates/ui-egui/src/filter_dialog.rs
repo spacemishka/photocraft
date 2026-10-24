@@ -476,6 +476,11 @@ pub fn reset_fields(app: &PhotocraftApp, fields: &mut Map<String, Value>) {
 }
 
 pub fn open(app: &mut PhotocraftApp, command: &str) -> Option<u64> {
+    open_with(app, command, Map::new())
+}
+
+/// [`open`] with field values forced after the defaults (e.g. a noise analysis's recommendation).
+pub fn open_with(app: &mut PhotocraftApp, command: &str, overrides: Map<String, Value>) -> Option<u64> {
     let spec = photocraft_engine::commands::find(command)?;
     let mut fields = Map::new();
     fields.insert("__command".into(), json!(command));
@@ -503,6 +508,9 @@ pub fn open(app: &mut PhotocraftApp, command: &str) -> Option<u64> {
         // The document picker lists every open document (params refer to them by index).
         let names: Vec<String> = app.session.documents().iter().map(|d| d.doc.name.clone()).collect();
         fields.insert("__docs".into(), json!(names));
+    }
+    for (k, v) in overrides {
+        fields.insert(k, v);
     }
     let id = app.ui.open_dialog(crate::state::DialogKind::Command, fields);
     Some(id)

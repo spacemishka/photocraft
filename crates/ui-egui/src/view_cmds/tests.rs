@@ -791,3 +791,16 @@ fn noise_analysis_runs_from_the_menu_and_posts_a_notice() {
         app.ui.notices
     );
 }
+
+/// Filter › Noise › Reduce Noise from Analysis… opens the dialog with every recommended value.
+#[test]
+fn reduce_noise_dialog_gets_the_analysis_values() {
+    let (mut app, ctx) = app_with(1);
+    let v = menu(&mut app, &ctx, "analysis.noise.reduce", json!({})).expect("handled");
+    let id = v["dialog"].as_u64().expect("a dialog id");
+    let d = app.ui.dialogs.iter().find(|d| d.id == id).expect("the Reduce Noise dialog");
+    assert_eq!(d.fields.get("__command"), Some(&json!("filter.noise.reduceNoise")));
+    for key in ["strength", "preserveDetails", "reduceColorNoise", "sharpenDetails", "removeJpegArtifact"] {
+        assert_eq!(d.fields.get(key), v["noise"]["recommended"].get(key), "{key} was not passed through");
+    }
+}
