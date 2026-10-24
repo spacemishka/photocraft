@@ -3915,6 +3915,12 @@ curves	Smooth	Làm mượt
 	Make Ramp Web Safe	Giới hạn dải màu ở màu web
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	Phân tích nhiễu…
+	Noise Analysis	Phân tích nhiễu
+	Flat areas	Vùng phẳng
+	Clipped shadows / highlights	Vùng tối / sáng bị cắt
+	Suggested Reduce Noise	Giảm nhiễu đề xuất
+	Samples	Mẫu
 	Replace with surrounding background (no AI)	Thay bằng nền xung quanh (không dùng AI)
 	sd-cli Path	Đường dẫn sd-cli
 	Diffusion Model	Mô hình khuếch tán

@@ -3047,6 +3047,12 @@ curves	Smooth	平滑
 	Make Ramp Web Safe	讓色帶成為網頁安全色
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	雜訊分析…
+	Noise Analysis	雜訊分析
+	Flat areas	平坦區域
+	Clipped shadows / highlights	截斷陰影 / 亮部
+	Suggested Reduce Noise	建議減少雜訊強度
+	Samples	取樣點
 	Replace with surrounding background (no AI)	以周圍背景取代（不使用 AI）
 	sd-cli Path	sd-cli 路徑
 	Diffusion Model	擴散模型

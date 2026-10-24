@@ -4168,6 +4168,12 @@ cameraRaw	Dehaze	Odstranění oparu
 	Make Ramp Web Safe	Omezit pruh na webové barvy
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	Analýza šumu…
+	Noise Analysis	Analýza šumu
+	Flat areas	Rovné plochy
+	Clipped shadows / highlights	Oříznuté stíny / světla
+	Suggested Reduce Noise	Doporučené potlačení šumu
+	Samples	Vzorky
 	Replace with surrounding background (no AI)	Nahradit okolním pozadím (bez AI)
 	sd-cli Path	Cesta k sd-cli
 	Diffusion Model	Difuzní model

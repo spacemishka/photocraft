@@ -3091,6 +3091,12 @@ curves	Smooth	平滑
 	Driver: {driver}	驱动程序：{driver}
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	噪点分析…
+	Noise Analysis	噪点分析
+	Flat areas	平坦区域
+	Clipped shadows / highlights	削波阴影 / 高光
+	Suggested Reduce Noise	建议减少杂色强度
+	Samples	采样点
 	Replace with surrounding background (no AI)	用周围背景替换（不使用 AI）
 	sd-cli Path	sd-cli 路径
 	Diffusion Model	扩散模型

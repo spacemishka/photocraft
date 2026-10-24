@@ -4337,6 +4337,12 @@ cameraRaw	Yellow	Sárga
 	Make Ramp Web Safe	Sáv korlátozása webes színekre
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	Zajanalízis…
+	Noise Analysis	Zajanalízis
+	Flat areas	Sík területek
+	Clipped shadows / highlights	Levágott árnyékok / csúcsfények
+	Suggested Reduce Noise	Javasolt zajcsökkentés
+	Samples	Minták
 	Replace with surrounding background (no AI)	Helyettesítés a környező háttérrel (AI nélkül)
 	sd-cli Path	sd-cli elérési útja
 	Diffusion Model	Diffúziós modell

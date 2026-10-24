@@ -4151,6 +4151,12 @@ cameraData	Lens	Lens
 	Make Ramp Web Safe	Şeridi Web Renkleriyle Sınırla
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	Gürültü Analizi…
+	Noise Analysis	Gürültü Analizi
+	Flat areas	Düz alanlar
+	Clipped shadows / highlights	Kırpılmış gölgeler / ışıklar
+	Suggested Reduce Noise	Önerilen gürültü azaltma
+	Samples	Örnekler
 	Replace with surrounding background (no AI)	Çevredeki arka planla değiştir (AI yok)
 	sd-cli Path	sd-cli yolu
 	Diffusion Model	Difüzyon modeli

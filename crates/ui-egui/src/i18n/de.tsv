@@ -3435,6 +3435,12 @@ curves	Smooth	Glätten
 	Make Ramp Web Safe	Farbbalken auf Webfarben beschränken
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	Rauschanalyse…
+	Noise Analysis	Rauschanalyse
+	Flat areas	Flache Bereiche
+	Clipped shadows / highlights	Beschnittene Schatten / Lichter
+	Suggested Reduce Noise	Empfohlene Rauschreduktion
+	Samples	Messpunkte
 	Replace with surrounding background (no AI)	Durch umgebenden Hintergrund ersetzen (ohne KI)
 	sd-cli Path	sd-cli-Pfad
 	Diffusion Model	Diffusionsmodell

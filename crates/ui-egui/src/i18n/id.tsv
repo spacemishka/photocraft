@@ -3437,6 +3437,12 @@ curves	Smooth	Haluskan
 	Make Ramp Web Safe	Jadikan Gradasi Aman untuk Web
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	Analisis Noise…
+	Noise Analysis	Analisis Noise
+	Flat areas	Area datar
+	Clipped shadows / highlights	Bayangan / sorotan terpotong
+	Suggested Reduce Noise	Pengurangan Noise yang disarankan
+	Samples	Sampel
 	Replace with surrounding background (no AI)	Ganti dengan latar sekitar (tanpa AI)
 	sd-cli Path	Jalur sd-cli
 	Diffusion Model	Model difusi

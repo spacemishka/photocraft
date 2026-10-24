@@ -4039,6 +4039,12 @@ curves	Smooth	Wygładź
 	Make Ramp Web Safe	Ogranicz pasek do kolorów internetowych
 
 # AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	Noise Analysis…	Analiza szumu…
+	Noise Analysis	Analiza szumu
+	Flat areas	Płaskie obszary
+	Clipped shadows / highlights	Obcięte cienie / światła
+	Suggested Reduce Noise	Sugerowane odszumianie
+	Samples	Próbki
 	Replace with surrounding background (no AI)	Zastąp otaczającym tłem (bez AI)
 	sd-cli Path	Ścieżka sd-cli
 	Diffusion Model	Model dyfuzyjny

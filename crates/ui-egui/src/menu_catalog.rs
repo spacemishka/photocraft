@@ -579,6 +579,7 @@ pub static CATALOG: &[(&[&str], &str, Option<&str>, &str)] = &[
     (&["Filter", "Noise"], "Dust & Scratches…", None, "filter.noise.dustAndScratches"),
     (&["Filter", "Noise"], "Median…", None, "filter.noise.median"),
     (&["Filter", "Noise"], "Reduce Noise…", None, "filter.noise.reduceNoise"),
+    (&["Filter", "Noise"], "Noise Analysis…", None, "analysis.noise"),
     (&["Filter", "Pixelate"], "Color Halftone…", None, "filter.pixelate.colorHalftone"),
     (&["Filter", "Pixelate"], "Crystallize…", None, "filter.pixelate.crystallize"),
     (&["Filter", "Pixelate"], "Facet", None, "filter.pixelate.facet"),

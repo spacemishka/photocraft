@@ -457,6 +457,7 @@ pub fn handles(id: &str) -> bool {
             | "window.panel.paragraph"
             | "window.panel.info"
             | "window.panel.histogram"
+            | "analysis.noise"
             | "window.panel.swatches"
             | "window.panel.adjustments"
             | "type.panels.character"
@@ -1535,6 +1536,28 @@ fn front(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: &Value)
                     json!({"source1Channel": load.clone(), "source2Channel": load, "blending": blends, "result": ["newChannel", "newDocument", "selection"]}),
                 ),
             }
+        }
+        "analysis.noise" => {
+            let r = match app.session.execute("analysis.noise", json!({})) {
+                Ok(v) => v,
+                Err(e) => return Some(Err(e.to_string())),
+            };
+            let f = |k: &str| r.get(k).and_then(Value::as_f64).unwrap_or(0.0);
+            let ch = |i: usize| r.get("sigma8").and_then(|v| v.get(i)).and_then(Value::as_f64).unwrap_or(0.0);
+            let lines = vec![
+                format!("σ (8-bit): {:.1}  ·  R {:.1}  G {:.1}  B {:.1}", f("luma8"), ch(0), ch(1), ch(2)),
+                format!("{}: {:.1}", tl!("Flat areas"), f("flat8")),
+                format!(
+                    "{}: {:.2}% / {:.2}%",
+                    tl!("Clipped shadows / highlights"),
+                    f("clippedShadows") * 100.0,
+                    f("clippedHighlights") * 100.0
+                ),
+                format!("{}: {:.0}", tl!("Suggested Reduce Noise"), f("suggestedReduceNoise")),
+                format!("{}: {}", tl!("Samples"), r.get("samples").and_then(Value::as_u64).unwrap_or(0)),
+            ];
+            crate::notices::post(app, tl!("Noise Analysis"), lines, false, None);
+            Some(Ok(r))
         }
         _ => None,
     }
