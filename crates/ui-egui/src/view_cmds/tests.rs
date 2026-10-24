@@ -778,3 +778,16 @@ fn form_keys_orders_by_order_then_catalogue() {
     let f = json!({"zeta": "", "alpha": ""}).as_object().unwrap().clone();
     assert_eq!(form_keys(&f).iter().map(String::as_str).collect::<Vec<_>>(), ["alpha", "zeta"]);
 }
+
+/// analysis.noise is reachable from Filter › Noise: the menu path runs it and shows the report.
+#[test]
+fn noise_analysis_runs_from_the_menu_and_posts_a_notice() {
+    let (mut app, ctx) = app_with(1);
+    let value = menu(&mut app, &ctx, "analysis.noise", json!({})).expect("analysis.noise must be handled");
+    assert!(value.get("luma8").is_some(), "the report is returned: {value}");
+    assert!(
+        app.ui.notices.iter().any(|n| n.title.contains("Noise") || n.title.contains("Rausch")),
+        "a notice shows the numbers: {:?}",
+        app.ui.notices
+    );
+}
