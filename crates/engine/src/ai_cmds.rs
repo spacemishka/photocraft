@@ -46,7 +46,7 @@ pub fn specs() -> Vec<CommandSpec> {
             label: "Skin Enhance",
             menu: &["Filter", "Neural Filters"],
             shortcut: None,
-            params: r#"{"strength":0..100=50,"smoothRadius":2..20=6,"preserveDetail":bool=true}"#,
+            params: r#"{"strength":0..100=50,"smoothRadius":2..20=6,"preserveDetail":bool=true,"output":"newLayer|inPlace"="newLayer"}"#,
             enabled: has_pixel_layer,
             run: skin_enhance,
             journal: true,
@@ -262,6 +262,11 @@ fn skin_enhance(s: &mut Session, p: &Value) -> Result<Value> {
     let strength = num(p, "strength", 50.0).clamp(0.0, 100.0) as f32 / 100.0;
     let smooth_radius = num(p, "smoothRadius", 6.0).clamp(2.0, 20.0) as f32;
     let preserve_detail = flag(p, "preserveDetail", true);
+    let output_mode = str_param(p, "output", "newLayer");
+    if !matches!(output_mode, "newLayer" | "inPlace") {
+        return Err(bad(CMD, format!("unknown output `{output_mode}` (newLayer|inPlace)")));
+    }
+    let new_layer = output_mode == "newLayer";
 
     let st = s.active().ok_or(EngineError::NoDocument)?;
     let layer = st.doc.layer(id).ok_or_else(|| bad(CMD, "layer not found"))?;
@@ -307,7 +312,11 @@ fn skin_enhance(s: &mut Session, p: &Value) -> Result<Value> {
             Ok(result)
         },
         move |s, result| {
-            let dmg = commit_inplace(s, id, &result, bounds, "Skin Enhance")?;
+            let dmg = if new_layer {
+                commit_new_layer(s, id, result, bounds, "Skin Enhance", "AI: Skin Enhance")?
+            } else {
+                commit_inplace(s, id, &result, bounds, "Skin Enhance")?
+            };
             Ok(json!({ "damage": [dmg.x0, dmg.y0, dmg.width(), dmg.height()] }))
         },
     )
@@ -583,6 +592,32 @@ mod tests {
         let mut s = session_with_selection(48, 48);
         let r = s.start("ai.removeObject", json!({"source": "magic"}));
         assert!(r.is_err(), "unknown source must be refused");
+    }
+
+    #[test]
+    fn skin_enhance_lands_on_a_new_layer_and_keeps_the_source() {
+        let mut s = session_with_selection(48, 48);
+        let st = s.active().unwrap();
+        let bounds = st.doc.bounds();
+        let source_before = st.doc.layers[0].surface().expect("background").read_region(bounds);
+        let layers = st.doc.layers.len();
+        s.execute("ai.skinEnhance", json!({"strength": 80})).unwrap();
+        let st = s.active().unwrap();
+        assert_eq!(st.doc.layers.len(), layers + 1, "a new layer holds the result");
+        assert_eq!(st.doc.layers.last().expect("the result layer").name, "AI: Skin Enhance 1");
+        let source_after = st.doc.layers[0].surface().expect("background").read_region(bounds);
+        assert_eq!(source_after, source_before, "the source layer stays untouched");
+    }
+
+    #[test]
+    fn skin_enhance_can_still_commit_in_place() {
+        let mut s = session_with_selection(48, 48);
+        let layers = s.active().unwrap().doc.layers.len();
+        let before = pixels(&s);
+        s.execute("ai.skinEnhance", json!({"strength": 80, "output": "inPlace"})).unwrap();
+        let st = s.active().unwrap();
+        assert_eq!(st.doc.layers.len(), layers, "in place adds no layer");
+        assert_ne!(pixels(&s), before, "the source layer was smoothed");
     }
 
     #[test]

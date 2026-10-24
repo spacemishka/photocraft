@@ -192,8 +192,12 @@ zählt); niedriger = näher am Original.
 ## 8. Bedienung: Haut glätten
 
 1. Pixel-Ebene mit Personen wählen (keine Auswahl nötig; der Befehl bearbeitet die ganze Ebene).
-2. **AI Retouching › Skin Enhance**: Strength (0–100), Radius (2–20 px), „Preserve Detail“.
+2. **AI Retouching › Skin Enhance**: Strength (0–100), Radius (2–20 px), „Preserve Detail“,
+   „Output to a new layer“ (Standard: an).
 3. **Apply Skin Enhance**.
+
+Das Ergebnis landet standardmäßig auf einer neuen Ebene `AI: Skin Enhance 1` über der Quelle
+(Auswahl bleibt unberührt, Original unverändert); ohne Häkchen wird direkt in die Ebene geschrieben.
 
 - Mit einem Segmentierungs-Backend würde die Hautmaske vom Modell kommen; die aktuellen lokalen
   Backends (sd-cli/ComfyUI) unterstützen das **nicht**, deshalb nutzt PhotoCraft die HSV-Hautmaske

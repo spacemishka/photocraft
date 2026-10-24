@@ -80,13 +80,19 @@ fn skin_enhance(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         widgets::slider_row(ui, tl!("Strength"), &mut ai.skin_strength, 0.0..=100.0, "%", None);
         widgets::slider_row(ui, tl!("Radius"), &mut ai.skin_radius, 2.0..=20.0, "px", None);
         widgets::checkbox(ui, &mut ai.skin_preserve_detail, tl!("Preserve Detail"));
+        widgets::checkbox(ui, &mut ai.skin_new_layer, tl!("Output to a new layer"));
     }
-    let (strength, radius, preserve) = {
+    let (strength, radius, preserve, new_layer) = {
         let ai = &app.ui.ai;
-        (ai.skin_strength, ai.skin_radius, ai.skin_preserve_detail)
+        (ai.skin_strength, ai.skin_radius, ai.skin_preserve_detail, ai.skin_new_layer)
     };
     if widgets::primary_button(ui, tl!("Apply Skin Enhance"), ui.available_width()).clicked() {
-        run(app, "ai.skinEnhance", json!({"strength": strength, "smoothRadius": radius, "preserveDetail": preserve}));
+        run(app, "ai.skinEnhance", json!({
+            "strength": strength,
+            "smoothRadius": radius,
+            "preserveDetail": preserve,
+            "output": if new_layer { "newLayer" } else { "inPlace" },
+        }));
     }
 }
 

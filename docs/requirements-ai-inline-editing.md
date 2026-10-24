@@ -98,7 +98,8 @@ needed. `"source": "model"` (default) uses the configured backend.
     "layer": 1,
     "strength": 50,
     "smoothRadius": 6,
-    "preserveDetail": true
+    "preserveDetail": true,
+    "output": "newLayer"
   }
   ```
 - **Behavior:**
@@ -106,7 +107,8 @@ needed. `"source": "model"` (default) uses the configured backend.
   2. Attempts segmentation via local backend; falls back to adaptive HSV skin-luma heuristic mask.
   3. Decomposes image frequencies using Gaussian local blur.
   4. Smooths low-frequency blemishes while keeping high-frequency texture when `preserveDetail` is active.
-  5. Applies result back into document with history tracking.
+  5. Commits the result as a new layer above the source (`"output": "newLayer"`, the default,
+     named "AI: Skin Enhance 1") or into the source layer (`"output": "inPlace"`), with history.
 
 ### 4.3 `ai.pingBackend`
 - **ID:** `ai.pingBackend`
