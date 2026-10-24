@@ -7,8 +7,14 @@
 
 ## Current Priorities (from Roadmap & Gaps)
 1. **G1: PSD Acceptance by Photoshop:**
-   - Fix PSD exporter issues where Photoshop rejects generated files (#1281, #2469).
-   - Improve Photoshop oracle rendering floor from 133/256 towards 200+.
+   - **First: update the checkout.** `upstream/main` (storytold/photocraft) is 3,510 commits ahead of
+     this branch and already carries the Photoshop text/Txt2 acceptance fixes: #2427 (unedited save
+     `Txt2` byte-identical), #3529 (no fresh-layer stub), #4041 (TySh bounds/AntiAlias/version),
+     #5673 (layer block after merged-transparency marker), #7220/#7698 (edited type keeps its `Txt2`
+     object). #5157 (complete edited-text round trips) is still an open upstream PR; #6311 (global
+     block padding) is closed upstream with no matching commit.
+   - Remaining after the update: raise the Photoshop oracle floor (188/256 → 200+); the corpus is
+     not fetched on this machine (`cargo xtask corpus --all`).
 2. **G2: Performance Budgets:**
    - Address the 22 over-budget performance scenarios in `perf/budgets.toml`.
    - Resolve P12 GPU crash at 150 layers and brush/cursor latency (#2619, #2566).
