@@ -31,23 +31,42 @@ pub fn section(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
 fn backend_row(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let ai = &app.session.prefs().ai;
-    ui.add(egui::Label::new(RichText::new(format!("{} · {}", ai.local_model, ai.local_url)).color(t.text_dim).size(11.5)).truncate());
+    // The active backend first: `make_backend` prefers sd-cli, then a ComfyUI workflow, then the
+    // Ollama-style server. Showing the unused local URL here was misleading.
+    let active = if !ai.sd_cli.trim().is_empty() {
+        format!("sd-cli · {}", ai.sd_cli)
+    } else if !ai.comfy_workflow.trim().is_empty() {
+        format!("ComfyUI · {}", ai.comfy_url)
+    } else {
+        format!("{} · {}", ai.local_model, ai.local_url)
+    };
+    ui.add(egui::Label::new(RichText::new(active).color(t.text_dim).size(11.5)).truncate());
     if widgets::secondary_button(ui, tl!("Test Connection"), 110.0).clicked() {
-        match app.run("ai.pingBackend", json!({})) {
+        let (ok, message) = match app.run("ai.pingBackend", json!({})) {
             Ok(v) => {
                 let ok = v.get("ok").and_then(serde_json::Value::as_bool).unwrap_or(false);
-                app.ui.status = if ok {
-                    tl!("AI backend is reachable").into()
+                let backend = v.get("backend").and_then(serde_json::Value::as_str).unwrap_or("AI");
+                let message = if ok {
+                    format!("{backend}: {}", tl!("AI backend is reachable"))
                 } else {
-                    format!("{}: {}", tl!("AI backend unreachable"), v.get("reason").and_then(serde_json::Value::as_str).unwrap_or_default())
+                    format!(
+                        "{backend}: {}: {}",
+                        tl!("AI backend unreachable"),
+                        v.get("reason").and_then(serde_json::Value::as_str).unwrap_or_default()
+                    )
                 };
-                app.ui.status_error = !ok;
+                (ok, message)
             }
-            Err(e) => {
-                app.ui.status = e;
-                app.ui.status_error = true;
-            }
-        }
+            Err(e) => (false, e),
+        };
+        app.ui.status = message.clone();
+        app.ui.status_error = !ok;
+        app.ui.ai.test_result = Some((ok, message));
+    }
+    // The status bar is easy to miss; show the result of this click right here too.
+    if let Some((ok, message)) = &app.ui.ai.test_result {
+        let color = if *ok { t.accent } else { t.danger };
+        ui.add(egui::Label::new(RichText::new(message).color(color).size(11.0)));
     }
 }
 
@@ -55,18 +74,18 @@ fn backend_row(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
 fn skin_enhance(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     ui.label(RichText::new(tl!("Skin Enhance")).color(crate::theme::Tokens::get(ui.ctx()).text_dim));
     ui.add_space(2.0);
-    let (mut strength, mut radius, mut preserve) = {
+    // Bind the widgets to the state itself: a per-frame copy snapped back while dragging.
+    {
+        let ai = &mut app.ui.ai;
+        widgets::slider_row(ui, tl!("Strength"), &mut ai.skin_strength, 0.0..=100.0, "%", None);
+        widgets::slider_row(ui, tl!("Radius"), &mut ai.skin_radius, 2.0..=20.0, "px", None);
+        widgets::checkbox(ui, &mut ai.skin_preserve_detail, tl!("Preserve Detail"));
+    }
+    let (strength, radius, preserve) = {
         let ai = &app.ui.ai;
         (ai.skin_strength, ai.skin_radius, ai.skin_preserve_detail)
     };
-    widgets::slider_row(ui, tl!("Strength"), &mut strength, 0.0..=100.0, "%", None);
-    widgets::slider_row(ui, tl!("Radius"), &mut radius, 2.0..=20.0, "px", None);
-    widgets::checkbox(ui, &mut preserve, tl!("Preserve Detail"));
     if widgets::primary_button(ui, tl!("Apply Skin Enhance"), ui.available_width()).clicked() {
-        {
-            let ai = &mut app.ui.ai;
-            (ai.skin_strength, ai.skin_radius, ai.skin_preserve_detail) = (strength, radius, preserve);
-        }
         run(app, "ai.skinEnhance", json!({"strength": strength, "smoothRadius": radius, "preserveDetail": preserve}));
     }
 }
@@ -80,26 +99,29 @@ fn remove_object(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         .session
         .active()
         .is_some_and(|st| st.doc.selection.as_ref().is_some_and(|sel| !sel.content_bounds().intersect(&st.doc.bounds()).is_empty()));
-    let (mut strength, mut new_layer) = { let ai = &app.ui.ai; (ai.remove_strength, ai.remove_new_layer) };
-    let mut prompt = app.ui.ai.remove_prompt.clone();
-    ui.add_enabled_ui(has_selection, |ui| {
-        ui.add(TextEdit::singleline(&mut prompt).hint_text(tl!("Fill hint for the model (optional)")).desired_width(ui.available_width()));
-        widgets::slider_row(ui, tl!("Strength"), &mut strength, 0.0..=100.0, "%", None);
-        widgets::checkbox(ui, &mut new_layer, tl!("Output to a new layer"));
-        if widgets::primary_button(ui, tl!("Remove Object"), ui.available_width()).clicked() {
-            {
-                let ai = &mut app.ui.ai;
-                ai.remove_prompt = prompt.clone();
-                (ai.remove_strength, ai.remove_new_layer) = (strength, new_layer);
-            }
-            let params = json!({
-                "prompt": if prompt.is_empty() { None::<&str> } else { Some(prompt.as_str()) },
-                "strength": strength / 100.0,
-                "output": if new_layer { "newLayer" } else { "inPlace" },
-            });
-            run(app, "ai.removeObject", params);
-        }
-    });
+    // The hint may be written before a selection exists; only the Apply button needs one.
+    {
+        let ai = &mut app.ui.ai;
+        ui.add(TextEdit::singleline(&mut ai.remove_prompt).hint_text(tl!("Fill hint for the model (optional)")).desired_width(ui.available_width()));
+        widgets::slider_row(ui, tl!("Strength"), &mut ai.remove_strength, 0.0..=100.0, "%", None);
+        widgets::checkbox(ui, &mut ai.remove_new_layer, tl!("Output to a new layer"));
+    }
+    let clicked = ui
+        .add_enabled_ui(has_selection, |ui| widgets::primary_button(ui, tl!("Remove Object"), ui.available_width()))
+        .inner
+        .clicked();
+    if clicked {
+        let (prompt, strength, new_layer) = {
+            let ai = &app.ui.ai;
+            (ai.remove_prompt.clone(), ai.remove_strength, ai.remove_new_layer)
+        };
+        let params = json!({
+            "prompt": if prompt.is_empty() { None::<&str> } else { Some(prompt.as_str()) },
+            "strength": strength / 100.0,
+            "output": if new_layer { "newLayer" } else { "inPlace" },
+        });
+        run(app, "ai.removeObject", params);
+    }
     if !has_selection {
         ui.label(RichText::new(tl!("Make a selection to remove an object")).color(t.text_faint).size(11.0));
     }

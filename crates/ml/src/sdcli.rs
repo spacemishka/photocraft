@@ -164,11 +164,15 @@ impl SdCliBackend {
             let args = self.args_for(&params);
             let log = std::fs::File::create(&log_path).map_err(|e| MlError::BadParam(format!("log file: {e}")))?;
             let err_log = log.try_clone().map_err(|e| MlError::BadParam(format!("log file: {e}")))?;
-            let mut child = Command::new(&self.cli)
-                .args(&args)
-                .stdin(Stdio::null())
-                .stdout(log)
-                .stderr(err_log)
+            let mut cmd = Command::new(&self.cli);
+            cmd.args(&args).stdin(Stdio::null()).stdout(log).stderr(err_log);
+            // A console program started from the GUI would otherwise flash a black window.
+            #[cfg(windows)]
+            {
+                use std::os::windows::process::CommandExt;
+                cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+            }
+            let mut child = cmd
                 .spawn()
                 .map_err(|e| MlError::BadParam(format!("start `{}`: {e}", self.cli.display())))?;
 

@@ -636,6 +636,9 @@ pub struct AiRetouchState {
     pub skin_radius: f32,
     /// `ai.skinEnhance` keeps high-frequency texture while smoothing.
     pub skin_preserve_detail: bool,
+    /// Result of the last "Test Connection" click: `(ok, message)`. Transient, not persisted.
+    #[serde(skip)]
+    pub test_result: Option<(bool, String)>,
 }
 
 impl Default for AiRetouchState {
@@ -647,6 +650,7 @@ impl Default for AiRetouchState {
             skin_strength: 50.0,
             skin_radius: 6.0,
             skin_preserve_detail: true,
+            test_result: None,
         }
     }
 }

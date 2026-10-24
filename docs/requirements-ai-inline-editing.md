@@ -113,6 +113,8 @@ L0  photocraft-codecs, photocraft-raster, photocraft-color, photocraft-geom
 
 ## 5. Configuration & Preferences
 
+Benutzerhandbuch: [ai-retouching-guide.md](ai-retouching-guide.md).
+
 Preferences stored under `ai`:
 - `localUrl` (string, default: `"http://127.0.0.1:11434"`): Local Ollama or llama.cpp endpoint.
 - `localModel` (string, default: `"llava"`): Model tag for vision/inpaint tasks.
