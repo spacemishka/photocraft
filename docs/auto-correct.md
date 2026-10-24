@@ -3,30 +3,27 @@
 Menü: **Image › Auto Correct…** (unter Auto Tone/Auto Contrast/Auto Color).
 
 Die Analyse ersetzt „nach Gefühl drehen": PhotoCraft misst das Histogramm der aktiven Pixel-Ebene
-(oder der Auswahl) und legt **zwei Einstellungsebenen** darüber — nichts wird in die Pixel
+(oder der Auswahl) und legt **Einstellungsebenen** darüber — nichts wird in die Pixel
 geschrieben, alles bleibt nachträglich änderbar.
 
-| Wert | Herkunft |
+| Ebene | Inhalt |
 |---|---|
-| Schwarzpunkt (`inBlack`) | 0,1 %-Perzentil der kombinierten Helligkeit, skaliert mit der Stärke |
-| Weißpunkt (`inWhite`) | 99,9 %-Perzentil, skaliert mit der Stärke |
-| Gamma R/G/B | gleicht die Kanal-Mediane an (Grauwelt-Weißabgleich) und erhält den Farbcharakter |
-| Dynamik (`vibrance`) | nur bei stumpfen, aber farbigen Bildern (mittlere Sättigung 5–35 %); Grau bleibt grau |
+| `Levels 1` | ein normaler Levels-Kanal, in dem **pro Farbkanal** der leere Rand links und rechts abgeschnitten wird (0,1 %-Perzentile); der Master bleibt unangetastet |
+| `Vibrance 1` | nur bei farbigen Bildern unter 55 % mittlerer Sättigung; Grau bleibt grau |
 
-Ergebnis:
-
-- `Auto Correct – Levels` (Tonwertkorrektur + Kanal-Gamma)
-- `Auto Correct – Vibrance` (nur wenn die Sättigung es hergibt)
+Beispiel: R 12–241, G 10–238, B 15–235 — jeder Kanal verliert nur die unbenutzten Enden, ein
+Farbstich verschwindet dadurch ohne Mitteltönung. Flache Kanäle (Spanne < 2 %) werden nicht
+gespreizt, sonst würde ein einziger Ton zu Schwarzweiß.
 
 Beide Ebenen lassen sich im Ebenen-Panel ein-/ausblenden, mit Deckkraft und Masken versehen oder
-über ihre Einstellungen nachjustieren. Die Meldung nennt die verwendeten Werte; die JSON-Antwort
-enthält `black`, `white`, `gamma`, `saturation`, `vibrance` und die Ebenen-IDs.
+über ihre Einstellungen nachjustieren. Die Meldung nennt die Kanalgrenzen; die JSON-Antwort
+enthält `channels` (je `[schwarz, weiß]`), `saturation`, `vibrance` und die Ebenen-IDs.
 
 ## Stärke
 
 `{"strength": 0..100}` (Standard 100) blendet jeden berechneten Wert gegen „keine Änderung":
-0 lässt Schwarz-/Weißpunkt bei 0/255, alle Gammas bei 1 und die Dynamik bei 0. Praktisch für
-einen sanften Look oder für Serien, bei denen nur ein Teil der Korrektur gewünscht ist.
+0 lässt alle Kanalgrenzen bei 0/255 und die Dynamik bei 0. Praktisch für einen sanften Look oder
+für Serien, bei denen nur ein Teil der Korrektur gewünscht ist.
 
 ## Abgrenzung zur KI
 
@@ -44,8 +41,8 @@ Statistik hier ist deterministisch, schnell und ohne Server verfügbar.
 Antwort (gekürzt):
 
 ```json
-{"applied":true,"black":12,"white":243,"gamma":[1.0,1.03,0.98],
- "saturation":0.28,"vibrance":6,"levelsLayer":7,"vibranceLayer":8}
+{"applied":true,"channels":[[12,243],[10,238],[15,235]],
+ "saturation":0.28,"vibrance":15,"levelsLayer":7,"vibranceLayer":8}
 ```
 
 ## Grenzen

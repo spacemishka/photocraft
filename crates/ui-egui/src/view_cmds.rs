@@ -1596,24 +1596,21 @@ fn front(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: &Value)
                 Ok(v) => v,
                 Err(e) => return Some(Err(e.to_string())),
             };
-            let f = |k: &str| r.get(k).and_then(Value::as_f64).unwrap_or(0.0);
-            let g: Vec<f64> = r
-                .get("gamma")
-                .and_then(Value::as_array)
-                .map(|a| a.iter().map(|v| v.as_f64().unwrap_or(1.0)).collect())
-                .unwrap_or_else(|| vec![1.0, 1.0, 1.0]);
+            let ch = r.get("channels").and_then(Value::as_array).cloned().unwrap_or_default();
+            let at = |i: usize, j: usize| ch.get(i).and_then(|c| c.get(j)).and_then(Value::as_f64).unwrap_or(0.0);
             let mut lines = vec![format!(
-                "{}: {:.0}–{:.0} · {} {:.2} / {:.2} / {:.2}",
+                "{}: R {:.0}–{:.0} · G {:.0}–{:.0} · B {:.0}–{:.0}",
                 tl!("Levels"),
-                f("black"),
-                f("white"),
-                tl!("Gamma"),
-                g.first().copied().unwrap_or(1.0),
-                g.get(1).copied().unwrap_or(1.0),
-                g.get(2).copied().unwrap_or(1.0),
+                at(0, 0),
+                at(0, 1),
+                at(1, 0),
+                at(1, 1),
+                at(2, 0),
+                at(2, 1)
             )];
-            if f("vibrance") >= 1.0 {
-                lines.push(format!("{}: {:+.0}", tl!("Vibrance"), f("vibrance")));
+            let vibrance = r.get("vibrance").and_then(Value::as_f64).unwrap_or(0.0);
+            if vibrance >= 1.0 {
+                lines.push(format!("{}: {:+.0}", tl!("Vibrance"), vibrance));
             }
             crate::notices::post(app, tl!("Auto Correct"), lines, false, None);
             Some(Ok(r))

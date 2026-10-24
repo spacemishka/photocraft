@@ -8,7 +8,7 @@
 use serde_json::{Value, json};
 
 use crate::commands::CommandSpec;
-use crate::edit_cmds::{clip_points, histograms, median};
+use crate::edit_cmds::{clip_points, histograms};
 use crate::{EngineError, Result, Session};
 use photocraft_geom::Rect;
 use photocraft_raster::Surface;
@@ -65,52 +65,40 @@ fn auto_correct(s: &mut Session, p: &Value) -> Result<Value> {
     }
 
     let h = histograms(surf, area);
-    let mut all = [0u64; 256];
-    for c in &h {
-        for (a, v) in all.iter_mut().zip(c) {
-            *a += v;
+    // A plain Levels layer: master untouched, each colour channel trimmed at its own empty
+    // margins (Photoshop's Auto Levels), so the cast is removed without a midtone gamma.
+    let per: [(f32, f32); 3] = std::array::from_fn(|c| clip_points(&h[c], 0.001));
+    let trimmed: [(f32, f32); 3] = std::array::from_fn(|c| {
+        let (lo, hi) = per[c];
+        // A flat or almost flat channel has no empty margins to trim; stretching it would
+        // turn one tone into black and white.
+        if hi - lo < 0.02 {
+            return (0.0, 1.0);
         }
-    }
-    let (lo, hi) = clip_points(&all, 0.001);
-    let lo = lo * strength;
-    let hi = 1.0 - (1.0 - hi) * strength;
-    let span = (hi - lo).max(1e-3);
-    let meds: [f32; 3] = std::array::from_fn(|c| median(&h[c]));
-    let target = (meds[0] + meds[1] + meds[2]) / 3.0;
-    let gammas: [f32; 3] = std::array::from_fn(|c| {
-        let t = ((meds[c] - lo) / span).clamp(0.02, 0.98);
-        let want = ((target - lo) / span).clamp(0.02, 0.98);
-        let g = (t.ln() / want.ln()).clamp(0.1, 9.99);
-        1.0 + (g - 1.0) * strength
+        (lo * strength, 1.0 - (1.0 - hi) * strength)
     });
     let saturation = if mode == photocraft_doc::ColorMode::Rgb { mean_saturation(surf, area) } else { 0.0 };
-    // Only lift genuinely muted (but coloured) images: grey stays grey.
-    let raw = (((0.35 - saturation) * 80.0).round()).clamp(0.0, 40.0);
-    let vibrance = if saturation >= 0.05 && raw >= 3.0 { (raw * strength).round() } else { 0.0 };
+    // Muted and ordinary photos get a Vibrance layer; very saturated ones and grey do not.
+    let raw = (((0.55 - saturation) * 70.0).round()).clamp(0.0, 30.0);
+    let vibrance = if saturation >= 0.05 && raw >= 2.0 { (raw * strength).round() } else { 0.0 };
 
     let levels = json!({
-        "inBlack": (lo * 255.0).round(),
-        "inWhite": (hi * 255.0).round(),
-        "red": { "gamma": (gammas[0] * 1000.0).round() / 1000.0 },
-        "green": { "gamma": (gammas[1] * 1000.0).round() / 1000.0 },
-        "blue": { "gamma": (gammas[2] * 1000.0).round() / 1000.0 },
+        "red": { "inBlack": (trimmed[0].0 * 255.0).round(), "inWhite": (trimmed[0].1 * 255.0).round() },
+        "green": { "inBlack": (trimmed[1].0 * 255.0).round(), "inWhite": (trimmed[1].1 * 255.0).round() },
+        "blue": { "inBlack": (trimmed[2].0 * 255.0).round(), "inWhite": (trimmed[2].1 * 255.0).round() },
     });
     s.execute("layer.newAdjustmentLayer.levels", levels)?;
     let levels_id = s.active().and_then(|d| d.active_layer).map(|l| l.0);
-    s.execute("layer.setProps", json!({ "name": "Auto Correct – Levels" }))?;
 
     let mut vibrance_id = None;
     if vibrance >= 3.0 {
         s.execute("layer.newAdjustmentLayer.vibrance", json!({ "vibrance": vibrance }))?;
         vibrance_id = s.active().and_then(|d| d.active_layer).map(|l| l.0);
-        s.execute("layer.setProps", json!({ "name": "Auto Correct – Vibrance" }))?;
     }
 
     Ok(json!({
         "applied": true,
-        "black": (lo * 255.0).round(),
-        "white": (hi * 255.0).round(),
-        "gamma": gammas.map(|g| (g * 1000.0).round() / 1000.0),
+        "channels": trimmed.map(|(lo, hi)| [(lo * 255.0).round(), (hi * 255.0).round()]),
         "saturation": (saturation * 100.0).round() / 100.0,
         "vibrance": vibrance,
         "levelsLayer": levels_id,
@@ -165,7 +153,7 @@ mod tests {
     }
 
     #[test]
-    fn a_dull_dark_image_gets_levels_and_vibrance_layers() {
+    fn a_dull_dark_image_gets_trimmed_levels_and_vibrance() {
         // Low contrast, muted warm cast, dark.
         let s = doc_with(|x, y| {
             let v = 0.20 + 0.25 * (((x * 7 + y * 11) % 32) as f32 / 31.0);
@@ -175,23 +163,26 @@ mod tests {
         let layers = s.active().unwrap().doc.layers.len();
         let v = auto_correct(&mut s, &json!({})).expect("runs");
         assert_eq!(v["applied"], json!(true), "{v}");
-        assert!(v["black"].as_f64().is_some_and(|b| b < 60.0), "black point raised: {v}");
-        assert!(v["white"].as_f64().is_some_and(|w| w > 100.0), "white point pulled down: {v}");
+        let ch = v["channels"].as_array().expect("three channels");
+        assert_eq!(ch.len(), 3, "{v}");
+        let margin = |c: &Value| c[0].as_f64().unwrap_or(0.0);
+        let lift = |c: &Value| c[1].as_f64().unwrap_or(255.0);
+        assert!(margin(&ch[0]) > 10.0 && lift(&ch[0]) < 250.0, "red margins trimmed: {v}");
+        assert!(lift(&ch[0]) > lift(&ch[2]), "the warm cast trims R higher than B: {v}");
         assert!(v["vibrance"].as_f64().is_some_and(|x| x > 0.0), "muted colours get vibrance: {v}");
         let st = s.active().unwrap();
         assert_eq!(st.doc.layers.len(), layers + 2, "two adjustment layers: {:?}", st.doc.layers.iter().map(|l| &l.name).collect::<Vec<_>>());
-        assert_eq!(st.doc.layers[st.doc.layers.len() - 2].name, "Auto Correct – Levels");
-        assert_eq!(st.doc.layers.last().unwrap().name, "Auto Correct – Vibrance");
+        assert_eq!(st.doc.layers[st.doc.layers.len() - 2].name, "Levels 1");
+        assert_eq!(st.doc.layers.last().unwrap().name, "Vibrance 1");
     }
 
     #[test]
-    fn a_neutral_mid_grey_gets_no_colour_or_vibrance_lift() {
+    fn a_neutral_mid_grey_is_not_stretched_or_saturated() {
         let mut s = doc_with(|_, _| [0.5, 0.5, 0.5, 1.0], 32, 32);
         let v = auto_correct(&mut s, &json!({})).expect("runs");
         assert_eq!(v["vibrance"], json!(0.0), "grey is not a muted colour: {v}");
-        let g = v["gamma"].as_array().expect("gammas");
-        for c in g {
-            assert!((c.as_f64().unwrap_or(0.0) - 1.0).abs() < 0.02, "neutral stays neutral: {v}");
+        for c in v["channels"].as_array().expect("channels") {
+            assert_eq!(c, &json!([0.0, 255.0]), "a flat channel has no margins to trim: {v}");
         }
         assert_eq!(s.active().unwrap().doc.layers.len(), 2, "only the Levels layer");
     }
@@ -200,8 +191,9 @@ mod tests {
     fn zero_strength_changes_nothing_visible() {
         let mut s = doc_with(|x, _| { let v = 0.2 + 0.2 * (x % 5) as f32 / 4.0; [v, v, v, 1.0] }, 32, 32);
         let v = auto_correct(&mut s, &json!({"strength": 0})).expect("runs");
-        assert_eq!(v["black"], json!(0.0), "{v}");
-        assert_eq!(v["white"], json!(255.0), "{v}");
+        for c in v["channels"].as_array().expect("channels") {
+            assert_eq!(c, &json!([0.0, 255.0]), "{v}");
+        }
         assert_eq!(v["vibrance"], json!(0.0), "{v}");
     }
 
