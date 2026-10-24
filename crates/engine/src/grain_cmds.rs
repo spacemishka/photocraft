@@ -25,6 +25,30 @@ fn bad(cmd: &str, msg: impl Into<String>) -> EngineError {
     EngineError::Other(format!("{cmd}: {}", msg.into()))
 }
 
+/// Square max filter on a boolean mask (separable), so an edge excludes its whole neighbourhood.
+fn dilate(mask: &[bool], w: usize, h: usize, r: usize) -> Vec<bool> {
+    if r == 0 || w == 0 || h == 0 {
+        return mask.to_vec();
+    }
+    let mut rows = vec![false; w * h];
+    for y in 0..h {
+        for x in 0..w {
+            let from = x.saturating_sub(r);
+            let to = (x + r).min(w - 1);
+            rows[y * w + x] = (from..=to).any(|k| mask[y * w + k]);
+        }
+    }
+    let mut out = vec![false; w * h];
+    for y in 0..h {
+        let from = y.saturating_sub(r);
+        let to = (y + r).min(h - 1);
+        for x in 0..w {
+            out[y * w + x] = (from..=to).any(|k| rows[k * w + x]);
+        }
+    }
+    out
+}
+
 fn extract_grain(s: &mut Session, p: &Value) -> Result<Value> {
     const CMD: &str = "image.extractGrain";
     let radius = num(p, "radius", 4.0).clamp(1.0, 20.0) as f32;
@@ -67,28 +91,46 @@ fn extract_grain(s: &mut Session, p: &Value) -> Result<Value> {
             src[i]
         }
     };
+
+    // 1) Exclude structure: gradient of the blurred image, dilated by the blur radius, so the
+    //    whole neighbourhood where the blur leaks an edge is neutral in the grain layer.
+    let mut edge = vec![false; w * h];
+    for y in 0..h {
+        for x in 0..w {
+            let g = if x > 0 && y > 0 && x + 1 < w && y + 1 < h {
+                let gx = (luma(&base, x + 1, y) - luma(&base, x - 1, y)).abs();
+                let gy = (luma(&base, x, y + 1) - luma(&base, x, y - 1)).abs();
+                gx + gy
+            } else {
+                0.0
+            };
+            edge[y * w + x] = g > 0.02;
+        }
+    }
+    let mask = dilate(&edge, w, h, (radius * 3.0).ceil() as usize);
+
+    // 2) Band-pass the residual: its own blur at twice the radius is the structure that leaked
+    //    through the first blur, so subtracting it keeps only grain-sized detail.
+    let mut res = vec![0.0f32; w * h * ch];
+    for i in 0..res.len() {
+        res[i] = data[i] - base[i];
+    }
+    let low = local_blur(&res, w, h, ch, None, (0, 0, w, h), radius * 2.0);
+    for (r, lo) in res.iter_mut().zip(&low) {
+        *r -= lo;
+    }
+
     let mut sum_abs = 0.0f64;
     let mut counted = 0u64;
     for y in 0..h {
         for x in 0..w {
-            let i = (y * w + x) * ch;
-            // Edges in the blur are detail, not grain: fade the residual out there.
-            let weight = if x > 0 && y > 0 && x + 1 < w && y + 1 < h {
-                let gx = (luma(&base, x + 1, y) - luma(&base, x - 1, y)).abs();
-                let gy = (luma(&base, x, y + 1) - luma(&base, x, y - 1)).abs();
-                (1.0 - (gx + gy - 0.01) / 0.06).clamp(0.0, 1.0)
-            } else {
-                0.0
-            };
-            let r = if monochrome && ch >= 3 {
-                luma(&data, x, y) - luma(&base, x, y)
-            } else {
-                data[i] - base[i]
-            };
-            if weight > 0.5 {
-                sum_abs += f64::from(r.abs());
-                counted += 1;
+            if mask[y * w + x] {
+                continue;
             }
+            let i = (y * w + x) * ch;
+            let r = if monochrome && ch >= 3 { luma(&res, x, y) } else { res[i] };
+            sum_abs += f64::from(r.abs());
+            counted += 1;
         }
     }
     // `p − blur` is a conservative grain estimate; 0.6 brings it near the 4-neighbour figure.
@@ -100,24 +142,20 @@ fn extract_grain(s: &mut Session, p: &Value) -> Result<Value> {
     for y in 0..h {
         for x in 0..w {
             let i = (y * w + x) * ch;
-            let weight = if x > 0 && y > 0 && x + 1 < w && y + 1 < h {
-                let gx = (luma(&base, x + 1, y) - luma(&base, x - 1, y)).abs();
-                let gy = (luma(&base, x, y + 1) - luma(&base, x, y - 1)).abs();
-                (1.0 - (gx + gy - 0.01) / 0.06).clamp(0.0, 1.0)
-            } else {
-                0.0
-            };
+            let structure = mask[y * w + x];
             for c in 0..ch {
                 if Some(c) == alpha {
                     out[i + c] = 1.0;
                     continue;
                 }
-                let value = if monochrome && ch >= 3 {
-                    luma(&data, x, y) - luma(&base, x, y)
+                let value = if structure {
+                    0.0
+                } else if monochrome && ch >= 3 {
+                    luma(&res, x, y)
                 } else {
-                    data[i + c] - base[i + c]
+                    res[i + c]
                 };
-                out[i + c] = (0.5 + value * weight * scale).clamp(0.0, 1.0);
+                out[i + c] = (0.5 + value * scale).clamp(0.0, 1.0);
             }
         }
     }
@@ -220,6 +258,37 @@ mod tests {
         let mut s = doc_with(|x, _| { let v = 0.2 + 0.6 * x as f32 / 95.0; [v, v, v, 1.0] }, 96, 96);
         let v = extract_grain(&mut s, &json!({})).expect("runs");
         assert!(v["sigma8"].as_f64().is_some_and(|s| s < 0.5), "no grain to extract: {v}");
+    }
+
+    #[test]
+    fn object_edges_are_neutral_in_the_grain_layer() {
+        let mut seed = 7u32;
+        let mut rnd = move || {
+            seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
+            (seed >> 8) as f32 / 16_777_216.0 - 0.5
+        };
+        // A hard object edge down the middle, with grain on both sides.
+        let mut s = doc_with(|x, _| {
+            let base = if x < 48 { 0.25 } else { 0.7 };
+            let v = base + 0.02 * rnd();
+            [v, v, v, 1.0]
+        }, 96, 96);
+        extract_grain(&mut s, &json!({ "radius": 4 })).expect("runs");
+        let st = s.active().unwrap();
+        let grain = st.doc.layers.last().unwrap().surface().unwrap().read_region(st.doc.bounds());
+        for x in 44..52 {
+            for y in 10..86 {
+                let i = ((y * 96) + x) * 4;
+                let v = grain[i];
+                assert!((v - 0.5).abs() < 0.05, "edge column {x},{y} is {} not neutral", v);
+            }
+        }
+        // Away from the edge the grain is real (not a flat 0.5 field).
+        let far = (10..86).map(|y| {
+            let i = ((y * 96) + 10) * 4;
+            (grain[i] - 0.5).abs()
+        }).fold(0.0f32, f32::max);
+        assert!(far > 0.01, "grain survives away from the edge: {far}");
     }
 
     #[test]

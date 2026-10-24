@@ -5,8 +5,11 @@ Menü: **Filter › Noise › Extract Grain…** (deutsch: „Korn extrahieren�
 PhotoCraft trennt das Korn einer Aufnahme vom Bildinhalt und legt es als **eigene Ebene** ab:
 
 - Grundlage ist der Hochfrequenz-Rest `Pixel − lokaler Weichzeichner`.
-- Kanten werden unterdrückt: wo der Weichzeichner starke Gradienten hat, wird der Rest
-  ausgeblendet — zurück bleibt das Korn in Flächen, nicht die Bildstruktur.
+- Zwei Stufen halten Bildstruktur heraus:
+  1. **Bandpass:** Vom Rest wird nochmals ein Weichzeichner (doppelter Radius) abgezogen — was
+     breiter ist als das Korn (Kanten, Verläufe, Objektformen), verschwindet.
+  2. **Kantenmaske:** Wo der Weichzeichner Gradienten zeigt, wird die Umgebung um den dreifachen
+     Radius neutral (0,5) gesetzt. Objektkanten tauchen dadurch nicht als helle/dunkle Säume auf.
 - Das Feld ist auf 0,5 zentriert (neutral) und wird mit **Overlay** über das Bild gelegt.
 - `radius` (1–20, Standard 4) bestimmt, welche Körnung als „fein" gilt: kleiner Radius = feineres
   Korn; größer = gröbere Strukturen.
@@ -34,6 +37,12 @@ Eine Korn-Ebene ist eine normale Pixel-Ebene; es gibt keinen Sondercontainer:
 
 - Sehr feines Korn (unter ~1/255) ist nach dem 8-Bit-Speichern nicht mehr vollständig da; aus
   16-/32-Bit-Quellen kommt mehr heraus.
+- Feine Texturen (Laub, Stoff, Fell, Rauschen im Himmel) zählen teilweise als Korn; ein größerer
+  `radius` trennt sie besser ab, kostet aber feines Korn. Für ein reines Korn-Sample eine ruhige
+  Fläche (Himmel, Wand) auswählen und dort extrahieren.
+- Kanten und Objektformen werden um den dreifachen Radius neutralisiert — dort ist die
+  Kornebene flach. Beim Kacheln fällt das nicht auf, beim Übereinanderlegen mit dem Original
+  ebenfalls nicht, weil 0,5 in Overlay unsichtbar ist.
 - Starke JPEG-Artefakte landen teilweise im Korn; erst „Reduce Noise" mit „Remove JPEG Artifact",
   dann extrahieren.
 - Bei gescannten Negativen zuerst invertieren, sonst wird die Orange-Maskierung mit extrahiert.
