@@ -142,6 +142,7 @@ pub mod warp_cmds;
 pub mod web_cmds;
 pub mod ai_cmds;
 pub mod auto_correct_cmds;
+pub mod grain_cmds;
 pub mod noise_cmds;
 mod wia_cmds;
 
