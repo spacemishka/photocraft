@@ -155,8 +155,34 @@ mod tests {
     }
 
     #[test]
-    fn the_ai_state_round_trips_through_serde() {
-        let state = crate::state::AiRetouchState { remove_prompt: "clear".into(), ..Default::default() };
+    fn the_fill_hint_can_be_typed_without_a_selection() {
+        use egui_kittest::Harness;
+        use egui_kittest::kittest::Queryable;
+        let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), crate::Services::default());
+        app.run("file.new", json!({"width": 32, "height": 32})).unwrap();
+        let mut h = Harness::builder().with_size(egui::vec2(360.0, 900.0)).build_ui_state(
+            |ui, app| {
+                if ui.ctx().fonts(|f| f.families().contains(&egui::FontFamily::Name("semibold".into()))) {
+                    section(app, ui);
+                }
+            },
+            app,
+        );
+        PhotocraftApp::setup_context(&h.ctx, Default::default());
+        h.run_steps(4);
+        let field = h
+            .query_all_by_role(egui::accesskit::Role::TextInput)
+            .next()
+            .expect("the fill-hint field is enabled without a selection");
+        field.click();
+        h.run_steps(1);
+        h.event(egui::Event::Text("wall".into()));
+        h.run_steps(2);
+        assert_eq!(h.state().ui.ai.remove_prompt, "wall", "typed text stays in the state");
+    }
+
+    #[test]
+    fn the_ai_state_round_trips_through_serde() {        let state = crate::state::AiRetouchState { remove_prompt: "clear".into(), ..Default::default() };
         let v = serde_json::to_value(&state).unwrap();
         assert_eq!(v["remove_prompt"], json!("clear"));
         let back: crate::state::AiRetouchState = serde_json::from_value(v).unwrap();
