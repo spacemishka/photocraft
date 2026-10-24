@@ -1039,7 +1039,7 @@ mod tests {
         let d = open(&mut app, "ai.removeObject").unwrap();
         let fields = &app.ui.dialogs.iter().find(|x| x.id == d).unwrap().fields;
         assert_eq!(fields["__preview"], json!(true));
-        assert_eq!(fields["strength"], json!(0.85));
+        assert_eq!(fields["strength"], json!(0.85f32 as f64));
         assert_eq!(fields["output"], json!("newLayer"));
         assert_eq!(fields["seed"], json!(0));
     }

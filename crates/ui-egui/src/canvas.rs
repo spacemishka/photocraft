@@ -2119,13 +2119,14 @@ fn documents(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
             let stroke = if d == idx { Stroke::new(1.5, t.accent) } else { Stroke::new(1.0, Color32::from_black_alpha(160)) };
             ui.painter().rect_stroke(cell, 0, stroke, egui::StrokeKind::Inside);
         }
+        crate::jobs_ui::ai_card(app, ui, rect);
         return;
     }
     let view = app.ui.views[idx].clone();
     canvas_view(app, ui, idx, rect, view, true);
     // A running AI inference job draws its progress card over the picture
     // (the modal progress dialog is suppressed for `ai.*` commands).
-    crate::jobs_ui::ai_card(app, ui);
+    crate::jobs_ui::ai_card(app, ui, rect);
 }
 
 /// The tab strip; returns where its document tabs are.

@@ -4127,3 +4127,26 @@ cameraRaw	Yellow	Sárga
 	This document's layers: {needed} of {budget} for layers	A dokumentum rétegei: {needed} / {budget} a rétegeknek
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	A dokumentum rétegeinek {needed} kell, de {budget} foglalhatnak: a teljes dokumentum újrarajzolása a CPU-n fut
 	GPU Memory (MB, 0 = Automatic)	GPU-memória (MB, 0 = Automatikus)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	AI	AI
+	AI Retouching	AI retusálás
+	AI backend is reachable	Az AI háttér elérhető
+	AI backend unreachable	Az AI háttér nem elérhető
+	Apply Skin Enhance	Bőrjavítás alkalmazása
+	Before/After	Előtte/Utána
+	Fill hint for the model (optional)	Kitöltési tipp a modellnek (nem kötelező)
+	Local model	Helyi modell
+	Local timeout secs	Helyi időtúllépés (mp)
+	Local url	Helyi URL
+	Make a selection to remove an object	Jelöljön ki egy területet az objektum eltávolításához
+	Max region mpx	Max. terület (MP)
+	Neural Filters	Neurális szűrők
+	Output to a new layer	Kimenet új rétegre
+	Preserve Detail	Részletek megőrzése
+	Remove Object	Objektum eltávolítása
+	Remove Object…	Objektum eltávolítása…
+	Skin Enhance	Bőrjavítás
+	Skin Enhance…	Bőrjavítás…
+	Test Connection	Kapcsolat tesztelése

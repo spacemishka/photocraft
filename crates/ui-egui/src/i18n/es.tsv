@@ -4170,3 +4170,26 @@ navigator	Zoom	Zoom
 	This document's layers: {needed} of {budget} for layers	Capas de este documento: {needed} de {budget} para capas
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	Las capas de este documento necesitan {needed} pero pueden ocupar {budget}: los redibujados de todo el documento usan la CPU
 	GPU Memory (MB, 0 = Automatic)	Memoria de GPU (MB, 0 = Automático)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	IA…
+	AI	IA
+	AI Retouching	Retoque con IA
+	AI backend is reachable	El backend de IA está disponible
+	AI backend unreachable	El backend de IA no está disponible
+	Apply Skin Enhance	Aplicar mejora de piel
+	Before/After	Antes/Después
+	Fill hint for the model (optional)	Indicación de relleno para el modelo (opcional)
+	Local model	Modelo local
+	Local timeout secs	Tiempo de espera local (s)
+	Local url	URL local
+	Make a selection to remove an object	Crea una selección para eliminar un objeto
+	Max region mpx	Región máxima (MP)
+	Neural Filters	Filtros neuronales
+	Output to a new layer	Salida a una capa nueva
+	Preserve Detail	Conservar detalle
+	Remove Object	Eliminar objeto
+	Remove Object…	Eliminar objeto…
+	Skin Enhance	Mejora de piel
+	Skin Enhance…	Mejora de piel…
+	Test Connection	Probar conexión

@@ -112,7 +112,7 @@ fn check_region_size(s: &Session, cmd: &str, rect: Rect) -> Result<()> {
 fn resolve_layer_id(s: &Session, p: &Value, cmd: &str) -> Result<LayerId> {
     match p.get("layer").and_then(Value::as_u64) {
         Some(id) => Ok(LayerId(id)),
-        None => s.active().and_then(|d| d.active_layer).ok_or(EngineError::Other("no active layer".into())),
+        None => s.active().and_then(|d| d.active_layer).ok_or_else(|| bad(cmd, "no active layer")),
     }
 }
 
@@ -405,7 +405,7 @@ mod tests {
     use std::time::{Duration, Instant};
 
     fn make_session() -> Session {
-        Session::headless_for_test()
+        Session::new()
     }
 
     /// A document with a textured background layer, a selection in its middle
@@ -420,8 +420,10 @@ mod tests {
             let mut px = Vec::with_capacity((w * h * 4) as usize);
             for y in 0..h {
                 for x in 0..w {
-                    let v = ((x * 7 + y * 13) % 31) as f32 / 30.0;
-                    px.extend_from_slice(&[v, 1.0 - v, ((x / 5 + y / 3) % 2) as f32, 1.0]);
+                    // A skin-toned, lightly textured patch: inside the HSV skin
+                    // window for ai.skinEnhance, and varied enough to inpaint.
+                    let t = ((x * 7 + y * 13) % 31) as f32 / 30.0;
+                    px.extend_from_slice(&[0.78 + 0.06 * t, 0.58 + 0.05 * t, 0.47 + 0.04 * t, 1.0]);
                 }
             }
             surf.write_region(r, &px);
@@ -494,7 +496,7 @@ mod tests {
         assert!(matches!(e.outcome, JobOutcome::Done(_)), "{e:?}");
         let st = s.active().unwrap();
         assert_eq!(st.doc.layers.len(), layers + 1, "the AI result landed as a new layer");
-        assert_eq!(st.doc.layers.last().unwrap().name, "AI: Remove Object");
+        assert_eq!(st.doc.layers.last().unwrap().name, "AI: Remove Object 1");
         assert!(st.doc.selection.is_some(), "the selection survives");
     }
 

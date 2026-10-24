@@ -4329,3 +4329,26 @@ shape	Appearance	Aspetto
 	This document's layers: {needed} of {budget} for layers	Livelli di questo documento: {needed} su {budget} per i livelli
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	I livelli di questo documento richiedono {needed} ma possono occupare {budget}: i ridisegni dell'intero documento usano la CPU
 	GPU Memory (MB, 0 = Automatic)	Memoria GPU (MB, 0 = Automatico)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	IA…
+	AI	IA
+	AI Retouching	Ritocco IA
+	AI backend is reachable	Il backend IA è raggiungibile
+	AI backend unreachable	Il backend IA non è raggiungibile
+	Apply Skin Enhance	Applica miglioramento pelle
+	Before/After	Prima/Dopo
+	Fill hint for the model (optional)	Suggerimento di riempimento per il modello (facoltativo)
+	Local model	Modello locale
+	Local timeout secs	Timeout locale (s)
+	Local url	URL locale
+	Make a selection to remove an object	Crea una selezione per rimuovere un oggetto
+	Max region mpx	Area max (MP)
+	Neural Filters	Filtri neurali
+	Output to a new layer	Output su un nuovo livello
+	Preserve Detail	Mantieni dettaglio
+	Remove Object	Rimuovi oggetto
+	Remove Object…	Rimuovi oggetto…
+	Skin Enhance	Miglioramento pelle
+	Skin Enhance…	Miglioramento pelle…
+	Test Connection	Verifica connessione

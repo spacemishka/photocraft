@@ -4281,3 +4281,26 @@ shape	Appearance	Izgled
 	This document's layers: {needed} of {budget} for layers	Slojevi ovog dokumenta: {needed} od {budget} za slojeve
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	Slojevima ovog dokumenta treba {needed}, a smeju da zauzmu {budget}: ceo dokument se ponovo iscrtava na CPU-u
 	GPU Memory (MB, 0 = Automatic)	GPU memorija (MB, 0 = Automatski)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	AI	AI
+	AI Retouching	AI retuširanje
+	AI backend is reachable	AI backend je dostupan
+	AI backend unreachable	AI backend nije dostupan
+	Apply Skin Enhance	Primeni poboljšanje kože
+	Before/After	Pre/Posle
+	Fill hint for the model (optional)	Nagoveštaj za model (opciono)
+	Local model	Lokalni model
+	Local timeout secs	Lokalno ograničenje vremena (s)
+	Local url	Lokalni URL
+	Make a selection to remove an object	Napravite selekciju da biste uklonili objekat
+	Max region mpx	Maks. oblast (MP)
+	Neural Filters	Neuronski filteri
+	Output to a new layer	Ispis na novi sloj
+	Preserve Detail	Sačuvaj detalje
+	Remove Object	Ukloni objekat
+	Remove Object…	Ukloni objekat…
+	Skin Enhance	Poboljšanje kože
+	Skin Enhance…	Poboljšanje kože…
+	Test Connection	Testiraj vezu

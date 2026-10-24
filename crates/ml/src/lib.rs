@@ -18,14 +18,7 @@
 //! This crate is at L4 (same as `tools`, `io`, `plugins`).  It never imports
 //! egui, winit, or any platform implementation.
 
-#![deny(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::unimplemented,
-    clippy::todo,
-    clippy::unreachable
-)]
+#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod backend;
 pub mod error;

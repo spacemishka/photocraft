@@ -31,7 +31,7 @@ pub fn section(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
 fn backend_row(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let ai = &app.session.prefs().ai;
-    ui.label(RichText::new(format!("{} · {}", ai.local_model, ai.local_url)).color(t.text_dim).size(11.5).truncate());
+    ui.add(egui::Label::new(RichText::new(format!("{} · {}", ai.local_model, ai.local_url)).color(t.text_dim).size(11.5)).truncate());
     if widgets::secondary_button(ui, tl!("Test Connection"), 110.0).clicked() {
         match app.run("ai.pingBackend", json!({})) {
             Ok(v) => {
@@ -85,7 +85,7 @@ fn remove_object(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     ui.add_enabled_ui(has_selection, |ui| {
         ui.add(TextEdit::singleline(&mut prompt).hint_text(tl!("Fill hint for the model (optional)")).desired_width(ui.available_width()));
         widgets::slider_row(ui, tl!("Strength"), &mut strength, 0.0..=100.0, "%", None);
-        widgets::checkbox(ui, &mut new_layer, tl!("Create a new layer"));
+        widgets::checkbox(ui, &mut new_layer, tl!("Output to a new layer"));
         if widgets::primary_button(ui, tl!("Remove Object"), ui.available_width()).clicked() {
             {
                 let ai = &mut app.ui.ai;
@@ -93,7 +93,7 @@ fn remove_object(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                 (ai.remove_strength, ai.remove_new_layer) = (strength, new_layer);
             }
             let params = json!({
-                "prompt": if prompt.is_empty() { None::<String> } else { Some(prompt.as_str()) },
+                "prompt": if prompt.is_empty() { None::<&str> } else { Some(prompt.as_str()) },
                 "strength": strength / 100.0,
                 "output": if new_layer { "newLayer" } else { "inPlace" },
             });
@@ -125,7 +125,9 @@ mod tests {
         assert_eq!(app.ui.ai.skin_strength, 50.0);
         assert_eq!(app.ui.ai.remove_strength, 85.0);
         assert!(app.ui.ai.remove_new_layer);
-        egui::Context::default().run_ui(Default::default(), |ui| section(&mut app, ui)).textures_delta.clear();
+        let ctx = egui::Context::default();
+        PhotocraftApp::setup_context(&ctx, Default::default());
+        ctx.run_ui(Default::default(), |ui| section(&mut app, ui)).textures_delta.clear();
         // Remove Object is disabled without a selection, with a hint instead.
         assert!(app.ui.ai.remove_prompt.is_empty());
     }

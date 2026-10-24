@@ -83,6 +83,7 @@ impl LocalBackend {
     }
 
     /// Encode a region of `surface` as PNG (base64-encoded string).
+    #[cfg(feature = "native")]
     fn encode_png(surface: &photocraft_raster::Surface, bounds: photocraft_geom::Rect) -> Result<String, MlError> {
         let (w, h) = (bounds.width() as usize, bounds.height() as usize);
         if w == 0 || h == 0 {
@@ -102,6 +103,7 @@ impl LocalBackend {
     }
 
     /// Decode a base64-encoded PNG into a surface covering `target_rect`.
+    #[cfg(feature = "native")]
     fn decode_png(b64: &str, target_rect: photocraft_geom::Rect) -> Result<photocraft_raster::Surface, MlError> {
         let bytes = base64_decode(b64)?;
         let img = photocraft_codecs::decode(&bytes).map_err(|e| MlError::InvalidOutput(e.to_string()))?;
@@ -121,7 +123,7 @@ impl InferenceBackend for LocalBackend {
 
     fn run(&self, req: InferenceRequest) -> Result<InferenceResult, MlError> {
         #[cfg(not(feature = "native"))]
-        { let _ = req; return Err(MlError::Unsupported); }
+        { let _ = req; Err(MlError::Unsupported) }
 
         #[cfg(feature = "native")]
         { self.run_native(req) }
@@ -218,7 +220,7 @@ fn make_client(timeout_secs: u32) -> Result<reqwest::blocking::Client, MlError> 
 /// Public base64 encoder (for tests).
 pub fn base64_encode(data: &[u8]) -> String {
     const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::with_capacity((data.len() + 2) / 3 * 4);
+    let mut out = String::with_capacity(data.len().div_ceil(3) * 4);
     for chunk in data.chunks(3) {
         let b0 = chunk[0];
         let b1 = chunk.get(1).copied().unwrap_or(0);
@@ -246,7 +248,7 @@ pub fn base64_decode(s: &str) -> Result<Vec<u8>, MlError> {
         }
     }
     let bytes: Vec<u8> = s.bytes().filter(|b| !matches!(b, b'\n' | b'\r' | b' ')).collect();
-    if bytes.len() % 4 != 0 {
+    if !bytes.len().is_multiple_of(4) {
         return Err(MlError::Response("invalid base64 length".into()));
     }
     let mut out = Vec::with_capacity(bytes.len() / 4 * 3);

@@ -3,7 +3,7 @@
 ## Current Status
 - **Version:** 0.6.0 (Alpha stage).
 - **Readiness:** ~45% ready for real work (Alpha gate passed for all 6 core daily workflows).
-- **Parity Score:** Menu wiring 628/628 (100%), feature breadth ~76%, 56/68 tools, 30/35 panels.
+- **Parity Score:** Menu wiring 634/634 (100%), feature breadth ~76%, 56/68 tools, 30/35 panels.
 
 ## Current Priorities (from Roadmap & Gaps)
 1. **G1: PSD Acceptance by Photoshop:**
@@ -23,13 +23,14 @@
 - Ensure all command inputs are treated as untrusted and never cause panics.
 
 ## Current Work: AI Inline Editing (docs/requirements-ai-inline-editing.md)
-- **MVP-1 done** (previous session): `photocraft-ml` L4 crate, `AiPrefs`, `ai.removeObject` / `ai.skinEnhance` / `ai.pingBackend`.
-- **MVP-2 implemented, pending compile+test on this machine** (Defender ASR build friction, see `techContext.md`):
+- **MVP-1 done**: `photocraft-ml` L4 crate, `AiPrefs`, `ai.removeObject` / `ai.skinEnhance` / `ai.pingBackend`.
+- **MVP-2 done and verified (2026-10-24)**:
   - AI commands are background jobs: progress stages, Esc cancels, document unchanged on cancel.
   - Params docs in registry notation → schema dialogs with live proxy preview (fallback algorithms render without a server).
   - Before/After split preview toggle (draggable divider) in the filter preview window (`filter_preview_ui.rs`).
-  - On-canvas AI progress card (`jobs_ui::ai_card`); modal progress dialog suppressed for `ai.*`.
-  - Menu rows: Edit › Content-Aware › Remove Object…, Filter › Neural Filters › Skin Enhance… (`menu_catalog.rs`).
-  - Properties panel › AI Retouching (`ai_props_ui.rs`, `UiState.ai`): backend test, Skin Enhance + Remove Object controls.
-- **Next steps for whoever picks this up:** run the verification gates (`cargo test -p photocraft-engine --lib ai_cmds`, `cargo test -p photocraft-ui-egui --lib`, clippy, `cargo xtask wasm`, panic_hunt, `cargo xtask parity` — the two new menu rows change `docs/parity-checklist.md`), then commit. ~90 s retry spacing for cargo on this machine.
+  - On-canvas AI progress card (`jobs_ui::ai_card`), centred on the canvas rect and drawn in a child UI; modal progress dialog suppressed for `ai.*`.
+  - Menu rows: Edit › Content-Aware › Remove Object…, Filter › Neural Filters › Skin Enhance… (`menu_catalog.rs`); Edit › Preferences › AI… (`edit.preferences.ai`).
+  - Properties panel › AI Retouching (`ai_props_ui.rs`, `UiState.ai`): backend test, Skin Enhance + Remove Object controls ("Output to a new layer").
+- **Verification (2026-10-24):** engine lib 1700 passed; ui-egui lib 2966 passed; clippy `-D warnings` clean (engine, ui-egui, ml); `cargo xtask wasm` 25/25 ok; `panic_hunt --ignored` ok; `xtask parity` 634/634 (FLOOR raised); `xtask scorecard` regenerated (never-crash lints now 30/30).
+- **Next steps:** nothing left for MVP-2. Ranked focus returns to **G1 PSD acceptance** — fix Photoshop rejections (#1281, #2469) and raise the Photoshop oracle floor (≥188/256 in the current scorecard) toward 200+.
 

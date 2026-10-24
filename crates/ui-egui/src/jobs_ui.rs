@@ -746,9 +746,8 @@ fn ai_job(j: &JobInfo) -> bool {
 /// The on-canvas progress card for a running AI inference job on the active document
 /// (`ai.removeObject`, `ai.skinEnhance`): the canvas keeps showing the picture, the card
 /// centres on it with the job's progress, elapsed time and Cancel. Esc cancels (see [`tick`]).
-pub fn ai_card(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
-    let Some(j) = app.session.active_job().filter(|j| ai_job(j)) else { return };
-    let area = ui.available_rect_before_wrap();
+pub fn ai_card(app: &mut PhotocraftApp, ui: &mut egui::Ui, area: Rect) {
+    let Some(j) = app.session.active_job().filter(ai_job) else { return };
     if !area.is_positive() {
         return;
     }
@@ -763,12 +762,13 @@ pub fn ai_card(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         .shadow(egui::Shadow { offset: [0, 12], blur: 36, spread: 0, color: t.shadow })
         .inner_margin(egui::Margin::same(16));
     let mut cancel_it = false;
-    frame.show(ui, |ui| {
+    let mut child = ui.new_child(egui::UiBuilder::new().max_rect(card));
+    frame.show(&mut child, |ui| {
         ui.set_width(W - 32.0);
-        ui.label(RichText::new(tl!(&j.label)).font(crate::theme::semibold(14.0)).truncate());
+        ui.add(egui::Label::new(RichText::new(tl!(&j.label)).font(crate::theme::semibold(14.0))).truncate());
         ui.add_space(2.0);
         let msg = if j.message.is_empty() { tl!("Working…").to_string() } else { j.message.clone() };
-        ui.label(RichText::new(msg).color(t.text_dim).size(12.0).truncate());
+        ui.add(egui::Label::new(RichText::new(msg).color(t.text_dim).size(12.0)).truncate());
         ui.add_space(8.0);
         let (br, _) = ui.allocate_exact_size(vec2(ui.available_width(), 8.0), Sense::hover());
         bar(ui, br, shown_fraction(&j), &t);

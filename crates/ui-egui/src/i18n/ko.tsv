@@ -3386,3 +3386,26 @@ curves	Smooth	매끄럽게
 	This document's layers: {needed} of {budget} for layers	이 문서의 레이어: 레이어용 {budget} 중 {needed}
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	이 문서의 레이어에 {needed}가 필요하지만 {budget}만 사용할 수 있습니다: 문서 전체 다시 그리기는 CPU를 사용합니다
 	GPU Memory (MB, 0 = Automatic)	GPU 메모리(MB, 0 = 자동)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	AI	AI
+	AI Retouching	AI 리터칭
+	AI backend is reachable	AI 백엔드에 연결할 수 있습니다
+	AI backend unreachable	AI 백엔드에 연결할 수 없습니다
+	Apply Skin Enhance	피부 보정 적용
+	Before/After	이전/이후
+	Fill hint for the model (optional)	모델용 채우기 힌트(선택 사항)
+	Local model	로컬 모델
+	Local timeout secs	로컬 시간 초과(초)
+	Local url	로컬 URL
+	Make a selection to remove an object	개체를 제거하려면 선택 영역을 만드십시오
+	Max region mpx	최대 영역(MP)
+	Neural Filters	신경 필터
+	Output to a new layer	새 레이어로 출력
+	Preserve Detail	세부 사항 유지
+	Remove Object	개체 제거
+	Remove Object…	개체 제거…
+	Skin Enhance	피부 보정
+	Skin Enhance…	피부 보정…
+	Test Connection	연결 테스트

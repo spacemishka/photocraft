@@ -819,6 +819,13 @@ fn ai_inference_draws_the_canvas_overlay_card_instead_of_the_modal() {
     let gate = Arc::new(AtomicBool::new(false));
     let doc_before = h.state().session.active().unwrap().doc.clone();
     let job = slow_ai_job(h.state_mut(), &gate);
+    // The worker thread reports its first message asynchronously: wait for it (a few
+    // milliseconds), or the card would still show its placeholder when frames are drawn.
+    let start = Instant::now();
+    while h.state().session.active_job().map(|j| j.message) != Some("Smoothing".into()) {
+        assert!(start.elapsed() < Duration::from_secs(10), "the worker never reported progress");
+        std::thread::sleep(Duration::from_millis(1));
+    }
     // Past the modal's delay: the canvas card shows, the modal does not.
     frames_for(&mut h, 320);
     let info = h.state().session.active_job().unwrap();

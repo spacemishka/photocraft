@@ -3210,3 +3210,26 @@ curves	Smooth	Glätten
 	This document's layers: {needed} of {budget} for layers	Ebenen dieses Dokuments: {needed} von {budget} für Ebenen
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	Die Ebenen dieses Dokuments brauchen {needed}, dürfen aber {budget} belegen: Das ganze Dokument wird auf der CPU neu gezeichnet
 	GPU Memory (MB, 0 = Automatic)	GPU-Speicher (MB, 0 = Automatisch)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	KI…
+	AI	KI
+	AI Retouching	KI-Retusche
+	AI backend is reachable	KI-Backend ist erreichbar
+	AI backend unreachable	KI-Backend ist nicht erreichbar
+	Apply Skin Enhance	Hautverbesserung anwenden
+	Before/After	Vorher/Nachher
+	Fill hint for the model (optional)	Füllhinweis für das Modell (optional)
+	Local model	Lokales Modell
+	Local timeout secs	Lokales Zeitlimit (s)
+	Local url	Lokale URL
+	Make a selection to remove an object	Wählen Sie etwas aus, um ein Objekt zu entfernen
+	Max region mpx	Max. Bereich (MP)
+	Neural Filters	Neuronale Filter
+	Output to a new layer	Ausgabe in neue Ebene
+	Preserve Detail	Details erhalten
+	Remove Object	Objekt entfernen
+	Remove Object…	Objekt entfernen…
+	Skin Enhance	Hautverbesserung
+	Skin Enhance…	Hautverbesserung…
+	Test Connection	Verbindung testen

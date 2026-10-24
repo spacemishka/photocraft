@@ -3178,3 +3178,27 @@ curves	Smooth	Сгладить
 	This document's layers: {needed} of {budget} for layers	Слои этого документа: {needed} из {budget} для слоёв
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	Слоям этого документа нужно {needed}, но занимать они могут {budget}: весь документ перерисовывается на CPU
 	GPU Memory (MB, 0 = Automatic)	Память GPU (МБ, 0 = автоматически)
+	AI	ИИ
+	AI Retouching	ИИ-ретушь
+	AI backend is reachable	Сервер ИИ доступен
+	AI backend unreachable	Сервер ИИ недоступен
+	Apply Skin Enhance	Применить улучшение кожи
+	Before/After	До/После
+	Fill hint for the model (optional)	Подсказка для модели (необязательно)
+	Local model	Локальная модель
+	Local timeout secs	Локальный тайм-аут (с)
+	Local url	Локальный URL
+	Make a selection to remove an object	Создайте выделение, чтобы удалить объект
+	Max region mpx	Макс. область (МП)
+	Neural Filters	Нейронные фильтры
+	Output to a new layer	Вывод на новый слой
+	Preserve Detail	Сохранять детали
+	Remove Object	Удалить объект
+	Remove Object…	Удалить объект…
+	Skin Enhance	Улучшение кожи
+	Skin Enhance…	Улучшение кожи…
+	Test Connection	Проверить подключение
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	ИИ…
+	Strength	Сила

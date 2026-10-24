@@ -3968,3 +3968,26 @@ curves	Smooth	Vloeiend maken
 	This document's layers: {needed} of {budget} for layers	Lagen van dit document: {needed} van {budget} voor lagen
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	De lagen van dit document hebben {needed} nodig maar mogen {budget} gebruiken: het hele document wordt op de CPU opnieuw getekend
 	GPU Memory (MB, 0 = Automatic)	GPU-geheugen (MB, 0 = Automatisch)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	AI	AI
+	AI Retouching	AI-retouchering
+	AI backend is reachable	AI-backend is bereikbaar
+	AI backend unreachable	AI-backend is niet bereikbaar
+	Apply Skin Enhance	Huidverbetering toepassen
+	Before/After	Voor/Na
+	Fill hint for the model (optional)	Vulhint voor het model (optioneel)
+	Local model	Lokaal model
+	Local timeout secs	Lokale time-out (s)
+	Local url	Lokale URL
+	Make a selection to remove an object	Maak een selectie om een object te verwijderen
+	Max region mpx	Max. gebied (MP)
+	Neural Filters	Neurale filters
+	Output to a new layer	Uitvoer naar een nieuwe laag
+	Preserve Detail	Details behouden
+	Remove Object	Object verwijderen
+	Remove Object…	Object verwijderen…
+	Skin Enhance	Huidverbetering
+	Skin Enhance…	Huidverbetering…
+	Test Connection	Verbinding testen

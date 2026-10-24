@@ -3694,3 +3694,26 @@ curves	Smooth	Làm mượt
 	This document's layers: {needed} of {budget} for layers	Các lớp của tài liệu này: {needed} trên {budget} dành cho lớp
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	Các lớp của tài liệu này cần {needed} nhưng chỉ được dùng {budget}: vẽ lại toàn bộ tài liệu dùng CPU
 	GPU Memory (MB, 0 = Automatic)	Bộ nhớ GPU (MB, 0 = Tự động)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	AI	AI
+	AI Retouching	Chỉnh sửa bằng AI
+	AI backend is reachable	Có thể kết nối tới backend AI
+	AI backend unreachable	Không thể kết nối tới backend AI
+	Apply Skin Enhance	Áp dụng tăng cường da
+	Before/After	Trước/Sau
+	Fill hint for the model (optional)	Gợi ý lấp đầy cho mô hình (không bắt buộc)
+	Local model	Mô hình cục bộ
+	Local timeout secs	Thời gian chờ cục bộ (giây)
+	Local url	URL cục bộ
+	Make a selection to remove an object	Tạo vùng chọn để xóa đối tượng
+	Max region mpx	Vùng tối đa (MP)
+	Neural Filters	Bộ lọc nơ-ron
+	Output to a new layer	Xuất sang lớp mới
+	Preserve Detail	Giữ chi tiết
+	Remove Object	Xóa đối tượng
+	Remove Object…	Xóa đối tượng…
+	Skin Enhance	Tăng cường da
+	Skin Enhance…	Tăng cường da…
+	Test Connection	Kiểm tra kết nối

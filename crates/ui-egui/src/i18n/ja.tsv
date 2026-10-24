@@ -3884,3 +3884,26 @@ curves	Smooth	スムーズ
 	This document's layers: {needed} of {budget} for layers	このドキュメントのレイヤー: レイヤー用 {budget} のうち {needed}
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	このドキュメントのレイヤーには {needed} が必要ですが、使えるのは {budget} です: ドキュメント全体の再描画は CPU で行われます
 	GPU Memory (MB, 0 = Automatic)	GPU メモリ（MB、0 = 自動）
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	AI	AI
+	AI Retouching	AI レタッチ
+	AI backend is reachable	AI バックエンドに接続できます
+	AI backend unreachable	AI バックエンドに接続できません
+	Apply Skin Enhance	肌補正を適用
+	Before/After	ビフォー/アフター
+	Fill hint for the model (optional)	モデルへのヒント（省略可）
+	Local model	ローカルモデル
+	Local timeout secs	ローカルタイムアウト（秒）
+	Local url	ローカル URL
+	Make a selection to remove an object	オブジェクトを削除するには選択範囲を作成してください
+	Max region mpx	最大領域（MP）
+	Neural Filters	ニューラルフィルター
+	Output to a new layer	新しいレイヤーに出力
+	Preserve Detail	ディテールを保持
+	Remove Object	オブジェクトを削除
+	Remove Object…	オブジェクトを削除…
+	Skin Enhance	肌補正
+	Skin Enhance…	肌補正…
+	Test Connection	接続をテスト

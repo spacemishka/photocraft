@@ -3200,3 +3200,27 @@ curves	Smooth	Haluskan
 	This document's layers: {needed} of {budget} for layers	Layer dokumen ini: {needed} dari {budget} untuk layer
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	Layer dokumen ini membutuhkan {needed} tetapi boleh memakai {budget}: penggambaran ulang seluruh dokumen memakai CPU
 	GPU Memory (MB, 0 = Automatic)	Memori GPU (MB, 0 = Otomatis)
+	AI	AI
+	AI Retouching	Retus AI
+	AI backend is reachable	Backend AI dapat dijangkau
+	AI backend unreachable	Backend AI tidak dapat dijangkau
+	Apply Skin Enhance	Terapkan Peningkatan Kulit
+	Before/After	Sebelum/Sesudah
+	Fill hint for the model (optional)	Petunjuk isian untuk model (opsional)
+	Local model	Model lokal
+	Local timeout secs	Batas waktu lokal (dtk)
+	Local url	URL lokal
+	Make a selection to remove an object	Buat seleksi untuk menghapus objek
+	Max region mpx	Area maks. (MP)
+	Neural Filters	Filter Neural
+	Output to a new layer	Keluaran ke lapisan baru
+	Preserve Detail	Pertahankan Detail
+	Remove Object	Hapus Objek
+	Remove Object…	Hapus Objek…
+	Skin Enhance	Peningkatan Kulit
+	Skin Enhance…	Peningkatan Kulit…
+	Test Connection	Uji Koneksi
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	Strength	Kekuatan

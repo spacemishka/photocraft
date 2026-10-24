@@ -31,7 +31,7 @@ photocraft-io = { workspace = true }
 photocraft-psd = { workspace = true }
 photocraft-format = { workspace = true }
 photocraft-plugins = { workspace = true }
-photocraft-ml      = { workspace = true, features = ["native"] }
+photocraft-ml      = { workspace = true }
 blake3 = { version = "1.8", default-features = false, features = ["pure"] }
 photocraft-codecs = { workspace = true }
 flate2 = { workspace = true }
@@ -43,6 +43,8 @@ roxmltree = "0.20"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tempfile = "3"
+# The HTTP backend for the local AI server; absent on wasm (the backend reports Unsupported).
+photocraft-ml = { workspace = true, features = ["native"] }
 
 [dev-dependencies]
 photocraft-affinity = { workspace = true, features = ["synth"] }

@@ -11,7 +11,7 @@
 - **M7 Adjustments & Filters:** In Progress (16 adjustment layers, 70+ filters, Actions record/replay).
 - **M8 PSD v2:** In Progress (smart objects, effects, text, shapes; expanding Photoshop oracle test coverage).
 - **M9 Text, Vector, Styles:** In Progress (HarfBuzz text, vector shapes, all 10 layer effects on CPU & GPU).
-- **M10 Smart Features:** In Progress (classical Select Subject, Content-Aware Fill/Scale, Healing; **AI inline editing started**: `photocraft-ml` (L4, Ollama/llama.cpp client + classical fallback), `ai.removeObject` / `ai.skinEnhance` / `ai.pingBackend` commands — MVP-1 done; MVP-2 interactive UI (job-based progress + Esc cancel, on-canvas AI progress card, Before/After split preview in the filter dialog, Properties panel AI Retouching section, menu items) implemented, **not yet compiled/verified on this machine** (see techContext › Windows Defender ASR build friction).
+- **M10 Smart Features:** In Progress (classical Select Subject, Content-Aware Fill/Scale, Healing; **AI inline editing MVP-2 done and verified** (2026-10-24): `photocraft-ml` (L4, Ollama/llama.cpp client + classical fallback), `ai.removeObject` / `ai.skinEnhance` / `ai.pingBackend`; job-based progress + Esc cancel, on-canvas AI progress card, Before/After split preview in the filter dialog, Properties panel AI Retouching section, menu items. Verification gates green: engine 1700 lib tests, ui-egui 2966 lib tests, clippy, `xtask wasm`, `panic_hunt`, parity 634/634.
 - **M11 Automation & Formats:** In Progress (MCP server, batch processing, Image Processor; remaining format codecs pending).
 - **M12 Pro Parity:** In Progress (CMYK/Lab/Duotone, soft proofing, channels; timeline and HDR pending).
 

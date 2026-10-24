@@ -3938,3 +3938,26 @@ cameraData	Lens	Lens
 	This document's layers: {needed} of {budget} for layers	Bu belgenin katmanları: katmanlar için {budget} içinden {needed}
 	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	Bu belgenin katmanlarının {needed} belleğe ihtiyacı var ama en fazla {budget} kullanabilirler: tüm belgenin yeniden çizimi CPU'yu kullanır
 	GPU Memory (MB, 0 = Automatic)	GPU Belleği (MB, 0 = Otomatik)
+
+# AI inline editing (MVP-2): the Properties panel, the AI dialogs and Preferences > AI
+	AI…	AI…
+	AI	AI
+	AI Retouching	AI Rötuş
+	AI backend is reachable	AI arka ucu erişilebilir
+	AI backend unreachable	AI arka ucu erişilemez
+	Apply Skin Enhance	Cilt iyileştirmeyi uygula
+	Before/After	Önce/Sonra
+	Fill hint for the model (optional)	Model için doldurma ipucu (isteğe bağlı)
+	Local model	Yerel model
+	Local timeout secs	Yerel zaman aşımı (sn)
+	Local url	Yerel URL
+	Make a selection to remove an object	Nesneyi kaldırmak için bir seçim yapın
+	Max region mpx	Maks. alan (MP)
+	Neural Filters	Sinir filtreleri
+	Output to a new layer	Yeni katmana çıktı
+	Preserve Detail	Ayrıntıyı koru
+	Remove Object	Nesneyi kaldır
+	Remove Object…	Nesneyi kaldır…
+	Skin Enhance	Cilt iyileştirme
+	Skin Enhance…	Cilt iyileştirme…
+	Test Connection	Bağlantıyı test et

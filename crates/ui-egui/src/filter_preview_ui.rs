@@ -122,10 +122,10 @@ pub(crate) fn window(app: &PhotocraftApp, dialog: u64, ui: &mut egui::Ui, f: &mu
         painter.image(tex.id(), dest, uv, Color32::WHITE);
     }
     if split && !holding
-        && let (Some(before), Some(after)) = (orig.as_ref(), filt.as_ref())
+        && let (Some(before), Some(_)) = (orig.as_ref(), filt.as_ref())
         && let Some((dest_left, uv_left)) = left_of_split(dest, uv, split_x)
     {
-        painter.image(before.id(), dest_left, uv_left, Color32::WHITE);
+        painter.image(before.0.id(), dest_left, uv_left, Color32::WHITE);
         let line = Rect::from_min_max(pos2(dest_left.right(), rect.top()), pos2(dest_left.right() + 1.0, rect.bottom()));
         painter.rect_filled(line.intersect(rect), 0.0, t.accent);
     }
@@ -176,7 +176,7 @@ fn left_of_split(dest: Rect, uv: Rect, split_x: f32) -> Option<(Rect, Rect)> {
     if !split_x.is_finite() {
         return None;
     }
-    let frac = ((split_x - dest.left()) / dest.width().max(1.0)).clamp(0.0, 1.0);
+    let frac = split_x.clamp(0.0, 1.0);
     if frac <= 0.0 || frac >= 1.0 {
         return None;
     }
@@ -551,13 +551,13 @@ mod tests {
         let dest = Rect::from_min_max(pos2(10.0, 0.0), pos2(110.0, 50.0));
         let uv = Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0));
         // A quarter in: the left quarter of the image, one source fraction.
-        let (d, u) = left_of_split(dest, uv, 0.35).expect("inside the image");
+        let (d, u) = left_of_split(dest, uv, 0.25).expect("inside the image");
         assert_eq!(d, Rect::from_min_max(pos2(10.0, 0.0), pos2(35.0, 50.0)));
         assert_eq!(u.min, pos2(0.0, 0.0));
         assert_eq!(u.max, pos2(0.25, 1.0));
         // Outside the image there is nothing to cover.
-        assert!(left_of_split(dest, uv, 0.1).is_none(), "left of the image");
-        assert!(left_of_split(dest, uv, 1.1).is_none(), "right of the image");
+        assert!(left_of_split(dest, uv, 0.0).is_none(), "left of the image");
+        assert!(left_of_split(dest, uv, 1.0).is_none(), "right of the image");
         // Corrupt state recovers, never panics.
         assert!(left_of_split(dest, uv, f32::NAN).is_none());
     }
