@@ -7,14 +7,16 @@
 
 ## Current Priorities (from Roadmap & Gaps)
 1. **G1: PSD Acceptance by Photoshop:**
-   - **First: update the checkout.** `upstream/main` (storytold/photocraft) is 3,510 commits ahead of
-     this branch and already carries the Photoshop text/Txt2 acceptance fixes: #2427 (unedited save
-     `Txt2` byte-identical), #3529 (no fresh-layer stub), #4041 (TySh bounds/AntiAlias/version),
-     #5673 (layer block after merged-transparency marker), #7220/#7698 (edited type keeps its `Txt2`
-     object). #5157 (complete edited-text round trips) is still an open upstream PR; #6311 (global
-     block padding) is closed upstream with no matching commit.
-   - Remaining after the update: raise the Photoshop oracle floor (188/256 → 200+); the corpus is
-     not fetched on this machine (`cargo xtask corpus --all`).
+   - **Checkout is synced** (2026-10-24): merged `origin/ai-inline-editing` (storytold main at
+     `1c3db2e5c`, crate version 0.15.1). The Photoshop text/Txt2 acceptance fixes are now local:
+     #2427 (unedited save writes Photoshop's `Txt2` byte-identical), #3529 (no fresh-layer stub),
+     #4041 (TySh bounds/AntiAlias/version), #5673 (layer block after merged-transparency marker),
+     #7220/#7698 (edited type keeps its `Txt2` object).
+   - Still open upstream: #5157 (complete edited-text round trips; PR with `status:decision`).
+     #6311 (global tagged-block padding) is closed upstream with no commit naming it.
+   - Next G1 step: `cargo xtask corpus --all` (the corpus is not fetched on this machine), run
+     `cargo xtask test-corpus` and target the remaining oracle failures (Photoshop oracle floor is
+     in `crates/io/tests/corpus.rs`).
 2. **G2: Performance Budgets:**
    - Address the 22 over-budget performance scenarios in `perf/budgets.toml`.
    - Resolve P12 GPU crash at 150 layers and brush/cursor latency (#2619, #2566).
