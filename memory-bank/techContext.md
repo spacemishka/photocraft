@@ -7,7 +7,8 @@
 - **Multithreading:** rayon for parallel CPU tile processing.
 - **Color & Profiles:** Proprietary `cms` ICC engine; no external lcms dependency.
 - **Automation:** Model Context Protocol (MCP) server, TCP JSON control protocol.
-- **AI Inference (M10):** `photocraft-ml` (L4): `InferenceBackend` trait, `LocalBackend` (Ollama / llama.cpp-compatible REST, feature-gated `native`, off on wasm), `ClassicalFallback` (returns `Unsupported`; engine substitutes PatchMatch / HSV+frequency-separation). Commands in `engine/src/ai_cmds.rs`, run as background jobs (`crate::jobs`).
+- **AI Inference (M10):** `photocraft-ml` (L4): `InferenceBackend` trait with three backends: `LocalBackend` (Ollama-compatible REST, `native` feature), `ComfyBackend` (uploads image+mask, patches an API-format workflow with `{{image}}`/`{{mask}}`/`{{prompt}}`/`{{seed}}`/`{{strength}}`/`{{width}}`/`{{height}}`/`{{task}}`, `/prompt` -> `/history` -> `/view`), and `SdCliBackend` (spawns `sd-cli` per request with temp PNGs and a timeout kill). Priority: `ai.sdCli` > `ai.comfyWorkflow` > `ai.localUrl`. `pixels.rs` resamples server images to the region. Engine commands in `engine/src/ai_cmds.rs`, run as background jobs (`crate::jobs`).
+- **Local image analysis (2026-10):** `analysis.noise` (`engine/src/noise_cmds.rs`, Immerkær sigma, flat-area grain, chroma, JPEG blockiness; `analysis.noise.reduce` prefills Reduce Noise), `image.autoCorrect` (`auto_correct_cmds.rs`: plain Levels layer with per-channel margin trims + Vibrance), `image.extractGrain` (`grain_cmds.rs`: band-passed residual, dilated edge mask, Overlay layer). All deterministic, no models.
 - **Web Build:** WebAssembly (wasm32-unknown-unknown, trunk, wasm-bindgen).
 
 ## Technical Constraints & Standards
